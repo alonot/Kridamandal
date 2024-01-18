@@ -451,4 +451,10 @@
     .item:active{
         cursor: pointer;
     }
+    .counter{
+        font-size: 200px;
+        font-weight: bold;
+        display: flex;
+        margin-left: -40px;
+    }
 </style>
