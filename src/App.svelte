@@ -9,9 +9,11 @@
 
     onMount(()=>{
       screenWidth=document.documentElement.clientWidth | 0
+      console.log(screenWidth)
     })
 
     $: current = "one"
+    $: hidden=true
     const clicked=(str:string)=>{
         current=str
     }
@@ -79,7 +81,7 @@
       </nav>
       {:else}
       <nav>
-        <div class="itemHolder">
+        <div class="itemHolder" style="display: flex;left:{hidden?"-100%":"0"}">
             <a href="#home" on:click={handleclick} class="{current=="home"?"yellow":"white"}" on:click={()=>{clicked("home")}}>Home</a>
             <a href="#tictac" on:click={handleclick} class="{current=="tictac"?"yellow":"white"}" on:click={()=>{clicked("tictac")}}>TicTacToe</a>
             <a href="#maze" on:click={handleclick} class="{current=="maze"?"yellow":"white"}" on:click={()=>{clicked("maze")}}>The Maze</a>
@@ -116,8 +118,26 @@
     main{
       display: block;
       height: auto;
+      transition: all 0.5s;
       width: 100vw;
       max-height: 400vh;
+    }
+    .itemHolder{
+      margin-top: 2em;
+      position: relative;
+      height: 100vh;
+      background: transparent;
+      flex-direction: column;
+    }
+    .itemHolder::before{
+      background-color: black;
+      position: absolute;
+      content: '';
+      z-index: -1;
+      opacity: 0.4;
+    }
+    .itemHolder a{
+      padding: 2em;
     }
   }
 </style>

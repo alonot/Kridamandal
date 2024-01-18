@@ -423,7 +423,7 @@
         background-color: rgb(0, 0, 0);
         justify-content: center;
         background-attachment:fixed;
-        background-image: url('/src/assets/tictactoe.jpeg');
+        background-image: url('/src/assets/img.jpg');
         background-size: cover;
         min-width: 1120px;
         min-height: 700;
