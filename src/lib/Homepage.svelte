@@ -41,6 +41,7 @@
     }
     .holder{
         width: 40%;
+        height: fit-content;
     }
     .Main_Container{
         width: 60%;
@@ -50,7 +51,7 @@
     }
     .textBox{
         display: inline-block;
-        justify-self: center;
+        align-self: center;
     }
     .fonter{
         font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -59,7 +60,37 @@
     }
     .heading{
         font-size: 100px;
+        align-self: center;
         -webkit-text-fill-color: transparent;   
         text-shadow: 8px 8px #fff, 15px 15px #494444;
+    }
+    @media(max-width:1000px){
+        main{
+        width: 100vw;
+        min-width: 0px;
+        display: block;
+        background-image: url('/src/assets/shivji_mobile.jpg');
+        background-repeat: repeat-y;
+        display: flex;
+        background-position: 50%;
+        justify-content: space-between;
+        flex-direction: column;
+    }
+    .Main_Container{
+        width: 100%;
+        margin-bottom: 10%;
+        align-self: baseline;
+    }
+    .heading{
+        display: flex;
+        justify-content: center;
+        font-size: 50px;
+    }
+    .textBox{
+        margin-top: 50px;
+    }
+    *{
+        font-size: medium;
+    }
     }
 </style>

@@ -36,4 +36,29 @@
         -webkit-text-fill-color: transparent;   
         text-shadow: 8px 8px #fff, 15px 15px #494444;
     }
+    @media(max-width:1000px){
+        main{
+        width: 100vw;
+        min-width: 0px;
+        display: block;
+        background-repeat: repeat-y;
+    }
+    *{
+        font-size: smaller;
+    }
+    h1{
+        width: 50%;
+    }
+    .heading{
+        font-size: 40px;
+        margin: 0;
+        display: flex;
+        align-self: center;
+    }
+    .textBox{
+        max-height: 80px;
+        max-lines: 1;
+        align-self: center;
+    }
+    }
 </style>

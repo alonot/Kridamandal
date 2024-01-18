@@ -29,6 +29,19 @@ body {
   max-height: 100vh;
   min-width: 400vw;
 }
+@media(max-width:600px){
+  html{
+    overflow-y: scroll;
+  }
+  body{
+    width: auto;
+    height: 400vh;
+    min-height: 400vh;
+    overflow-y: visible;
+    overflow-x: hidden;
+    min-width: auto;
+  }
+}
 
 h1 {
   font-size: 3.2em;
@@ -70,19 +83,19 @@ button:focus-visible {
 .white{
   color: rgb(218, 225, 225);
 }
-.one{   
+.home{   
   grid-column-start: 1;
   grid-column-end: 1;
 }
-.two{   
+.tictac{   
   grid-column-start: 2;
   grid-column-end: 2;
 }
-.three{
+.maze{
   grid-column-start: 3;
   grid-column-end: 3;
 }
-.four{
+.about{
   grid-column-start: 4;
   grid-column-end: 4;
 }
