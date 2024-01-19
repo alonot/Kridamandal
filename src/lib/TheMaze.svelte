@@ -1,10 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
-
+    $: msg="The Maze"
     $: sec="60"
     $: color="#04fc43"
-    $: message="The Maze"
     $: gameStarted=false
 
     let end=60
@@ -24,17 +23,22 @@
     let closeLoading:Function
     /** Checks if player won or not*/
     let checkResult:Function
-    /** Shows appropiate message*/
+    /** Shows appropiate massage*/
     let showResult:Function
+
     let now:number
     let loader: number | undefined
     let Board: HTMLCanvasElement
+    let messageBox:HTMLElement
+    /** generates A path from (0,0) to (x,TotalCells-1)*/
     let pathfinder:Function
     let TotalCells=25
-    const cellData:Array<Array<Array<number>>>=new Array(TotalCells)
-    const cellDatalines:Array<Array<number>>=new Array(TotalCells)
-    const bestPath:Array<Array<number>>=[]
+    /** Stors info of all 4 directions for each cell of maze  0:path is blocked;  1:path is free; 2:path is used by pather;*/ 
+    let cellData:Array<Array<Array<number>>>=new Array(TotalCells)
+    /** Stors number of lines that can be drawn for each cell of maze*/ 
+    let cellDatalines:Array<Array<number>>=new Array(TotalCells)
     let width=500/25;
+    // initialization
     for(let i=0;i<TotalCells;i++){
         cellData[i]=new Array(TotalCells)
         cellDatalines[i]=new Array(TotalCells)
@@ -45,36 +49,38 @@
     */
     const Game=()=>{
         gameStarted=true
-        // showLoading()
+        showLoading()
         resetVariables()
-        // closeLoading()
-        pathfinder()
-        initializePath()
-        coverBoundary()
-        startTimer()  // This function calls the checkresult function  which calls showresult.
+        setTimeout(() => {   
+            pathfinder()
+            initializePath()
+            coverBoundary()
+            closeLoading()
+            startTimer()  // This function calls the checkresult function  which calls showresult.
+        }, 10);
 
     }
 
-    let temp=[0,0]
     pathfinder=()=>{
         var c = Board.getContext('2d')
         var pather=[0,0]
-        var maxBackMove=0
-        var maxUpMove=7
+        var maxBackMove=0 // maximum time this finder can move backwards
+        var maxUpMove=7 // maximum time this finder can move upwards
         if(c){
             while(pather[1] != TotalCells-1){
                 let direction = (Math.random() *10 | 0) % 4
                 c.beginPath()
                 c.strokeStyle="red"
                 let row=pather[0],column=pather[1]
-                // console.log(row,column)
+                
                 let moveToX:number=0,moveToY:number=0,newX:number=0,newY:number=0
+                // Since running this function first so it may be that celldata[row][column] isn't initialized
                 if(!cellData[row][column]){
                     cellData[row][column]=new Array(4)
                     for(let k=0;k<4;k++) cellData[row][column][k]=1
                 }
                 switch(direction){
-                    case 0:
+                    case 0: // finder moves up
                             if(row>0 &&  maxUpMove>0){
                                 if(!cellData[row-1][column]){
                                     cellData[row-1][column]=new Array(4)
@@ -90,12 +96,14 @@
                                 row--
                             }
                             break
-                    case 1:
+                    case 1: // finder moves down
                             if(row+1 < TotalCells){
+                                // same initialization
                                 if(!cellData[row+1][column]){
                                     cellData[row+1][column]=new Array(4)
                                     for(let k=0;k<4;k++) cellData[row+1][column][k]=1
                                 }
+                                //setting that path is used by the pather
                                 cellData[row+1][column][0]=2
                                 cellData[row][column][1]=2
                                 moveToX=width*column
@@ -105,7 +113,7 @@
                                 row++
                             }
                             break
-                    case 2:
+                    case 2: // finder moves left
                             if(column>0 && maxBackMove>0){
                                 maxBackMove--
                                 cellData[row][column-1][3]=2
@@ -117,7 +125,7 @@
                                 column--
                             }
                             break
-                    case 3:
+                    case 3: // finder moves right
                             if(column+1 < TotalCells){
                                 if(!cellData[row][column+1]){
                                     cellData[row][column+1]=new Array(4)
@@ -133,27 +141,11 @@
                             }
                             break
                 }
-                var present=false
-                var temp=[row,column]
-                // for(let y=0;y<bestPath.length;y++){
-                //     if(bestPath[y][0]== temp[0] && bestPath[y][1]== temp[1] ){
-                //         present=true
-                //         break
-                //     }
-                // }
-                if(!present){
-                    c.moveTo(moveToX,moveToY)
-                    c.lineTo(newX,newY)
-                    c.stroke()
-                    pather=temp
-                    // bestPath.push(pather)
-                }
+                c.moveTo(moveToX,moveToY)
+                c.lineTo(newX,newY)
+                c.stroke()
+                pather=[row,column]
             }
-            console.log(pather)
-            temp=pather
-            cellData[pather[0]][pather[1]]=new Array(4)
-            for(let k=0; k<4;k++) cellData[pather[0]][pather[1]][k]=1
-            cellData[pather[0]][pather[1]][3]=2
         }
     }
     
@@ -174,27 +166,25 @@
                 for(let k=0;k<4;k++) currentdata[k]=1
                 if (cellData[row][column]) currentdata=cellData[row][column]
                 if (cellDatalines[row][column]) currentdatalines=cellDatalines[row][column]
-                let maxlines=3-currentdatalines
-                currentdata.forEach((element)=>{
-                    if(!element) maxlines--
+                let maxlines=3-currentdatalines //maximum lines that can be drawn for this cell
+                currentdata.forEach((element)=>{ // calculating how many lines can still be drawn
+                    if(element==0) maxlines--
                 })
                 if(c){
                     c.strokeStyle = "white";
                     c.beginPath()
-                    // const returned=handleBoundary(c,currentX,currentY,row,column,currentdata,maxlines)
-                    // currentdata=returned.currentdata
-                    // maxlines=returned.maxlines
 
+                    // This goes to all 4 sides of this cell and chooses randomly either to draw a barrier/line or not.- 
                     for(let l=0;l<4;l++){
                         if(currentdata[l]==2){maxlines--; continue}
                         if(maxlines<=0){
                             break
                         }
                         if(!currentdata[l]) continue
-                        const todraw=(Math.random() *10 | 0)%2
+                        const todraw=(Math.random() *10 | 0)%2 // whether to draw a line/barrier or not
                         if(todraw == 1){
                             // console.log(row+","+column+':'+l)
-                            maxlines-=1
+                            maxlines--
                             switch(l){
                                 case 0: // Up wall
                                         if(row-1 >= 0){
@@ -207,8 +197,9 @@
                                         break;
                                 case 1: // Down Wall
                                         if(row!=TotalCells-1){
-                                            cellData[row+1][column]=new Array(4)
-                                            for(let k=0;k<4;k++) cellData[row+1][column][k]=1
+                                                // initialization
+                                                cellData[row+1][column]=new Array(4)
+                                                for(let k=0;k<4;k++) cellData[row+1][column][k]=1
                                             cellData[row+1][column][0]=0
                                             cellDatalines[row+1][column]=1
                                         }
@@ -226,8 +217,9 @@
                                         break;
                                 case 3: // Right Wall
                                         if(column!=TotalCells-1){
-                                            cellData[row][column+1]=new Array(4)
-                                            for(let k=0;k<4;k++) cellData[row][column+1][k]=1
+                                                // initialization
+                                                cellData[row][column+1]=new Array(4)
+                                                for(let k=0;k<4;k++) cellData[row][column+1][k]=1
                                             cellData[row][column+1][2]=0
                                             cellDatalines[row][column+1]=1
                                         }
@@ -235,17 +227,17 @@
                                         c.lineTo(currentX+width,currentY+width)
                                         break;
                             }
-                            currentdata[l]=0
+                            currentdata[l]=0 // path is blocked for direction l
                         }
                         c.stroke()
                         
                     }
-                    cellData[row][column]=currentdata
+                    cellData[row][column]=currentdata //updation
                     // console.log(row+","+column)
                     // console.log(cellData[row][column])
                 }
 
-                cellDatalines[row][column]=3-maxlines
+                cellDatalines[row][column]=3-maxlines // updation
             }
         }
 
@@ -254,6 +246,7 @@
 
     }
 
+    /** This just makes line on the border */
     const coverBoundary=()=>{
         var c=Board.getContext('2d')
         if(c)
@@ -288,15 +281,25 @@
     resetVariables=()=>{
         sec="60"
         color="#04fc43"
-        message="The Maze"
         gameStarted=false
+        TotalCells=25
+        cellData=new Array(TotalCells)
+        cellDatalines=new Array(TotalCells)
+        width=500/25;
+        for(let i=0;i<TotalCells;i++){
+            cellData[i]=new Array(TotalCells)
+            cellDatalines[i]=new Array(TotalCells)
+        }
     }
 
     showLoading=()=>{
-        message="Loading"
+        msg="Loading"
+        messageBox.innerHTML=msg
         let count="."
+        console.log(msg)
         loader=setInterval(()=>{
             count+="."
+            console.log("p")
             if(count == "...."){
                 count = "."
             }
@@ -306,6 +309,7 @@
     closeLoading=()=>{
         clearInterval(loader)
         gameStarted=true
+        console.log("op"+gameStarted)
     }
 
     onMount(()=>{
@@ -313,16 +317,21 @@
         const sec_dot=document.getElementById('sec_dot')
         let temp=document.querySelector('canvas')
         if (temp) Board=temp
+        let temp2=document.getElementById('messageBox')
+        if(temp2) messageBox=temp2
+        let x:number
 
         startTimer=()=>{
-
-            let x=setInterval(()=>{
+            if(x){
+                clearInterval(x)
+            }
+            x=setInterval(()=>{
                 now=parseInt(sec)
             
             if(sec_dot)
-                sec_dot.style.transform = `rotateZ(${ now * 6}deg)`
+                sec_dot.style.transform = `rotateZ(${ (now-1) * 6}deg)`
             if(ss)
-                ss.style.strokeDashoffset = 440 - (440 * now / 60)+""
+                ss.style.strokeDashoffset = 440 - (440 * (now-1) / 60)+""
             
             now-=1
             sec=now+""
@@ -332,12 +341,12 @@
 
             if (now ==0){
                 clearInterval(x)
-                let result = checkResult()
-                if (result == true){
-                    showResult("WON")
-                }else{
-                    showResult("LOST")
-                }
+                // let result = checkResult()
+                // if (result == true){
+                //     showResult("WON")
+                // }else{
+                //     showResult("LOST")
+                // }
             }
             },1000)
             
@@ -379,8 +388,8 @@
             <div id="seconds">{sec}<br><span>seconds</span></div>
         </div>
         <div class="halfwidth playarea">
-            <canvas class="boardcanvas playareacontnt" style="background-color: black;" id="board"> </canvas>
-            <h3 class="playareacontnt" id="messageBox" style={!gameStarted?"display: none;":""}>{message}</h3>
+            <canvas class="boardcanvas playareacontnt" style={!gameStarted?"display: none;":""} id="board"> </canvas>
+            <div class="playareacontnt" id="messageBox" style={ gameStarted?"display: none;":""}>{msg}</div>
         </div>
     </div>
 </main>
@@ -506,7 +515,7 @@
         display: flex;
         align-self: center;
     }
-    .playarea h3{
+    .playarea div{
         display: flex;
         font-size: 3em;
         align-items: center;
