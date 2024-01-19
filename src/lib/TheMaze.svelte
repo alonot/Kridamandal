@@ -48,26 +48,31 @@
         // showLoading()
         resetVariables()
         // closeLoading()
-        initializePath()
         pathfinder()
-        // startTimer()  // This function calls the checkresult function  which calls showresult.
+        initializePath()
+        coverBoundary()
+        startTimer()  // This function calls the checkresult function  which calls showresult.
 
     }
 
+    let temp=[0,0]
     pathfinder=()=>{
         var c = Board.getContext('2d')
         var pather=[0,0]
         var maxBackMove=0
-        var maxUpMove=10
+        var maxUpMove=7
         if(c){
             while(pather[1] != TotalCells-1){
                 let direction = (Math.random() *10 | 0) % 4
                 c.beginPath()
                 c.strokeStyle="red"
                 let row=pather[0],column=pather[1]
-                console.log(row,column)
-                console.log(bestPath+"")
+                // console.log(row,column)
                 let moveToX:number=0,moveToY:number=0,newX:number=0,newY:number=0
+                if(!cellData[row][column]){
+                    cellData[row][column]=new Array(4)
+                    for(let k=0;k<4;k++) cellData[row][column][k]=1
+                }
                 switch(direction){
                     case 0:
                             if(row>0 &&  maxUpMove>0){
@@ -130,51 +135,28 @@
                 }
                 var present=false
                 var temp=[row,column]
-                for(let y=0;y<bestPath.length;y++){
-                    if(bestPath[y][0]== temp[0] && bestPath[y][1]== temp[1] ){
-                        present=true
-                        break
-                    }
-                }
+                // for(let y=0;y<bestPath.length;y++){
+                //     if(bestPath[y][0]== temp[0] && bestPath[y][1]== temp[1] ){
+                //         present=true
+                //         break
+                //     }
+                // }
                 if(!present){
                     c.moveTo(moveToX,moveToY)
                     c.lineTo(newX,newY)
                     c.stroke()
                     pather=temp
-                    bestPath.push(pather)
+                    // bestPath.push(pather)
                 }
             }
+            console.log(pather)
+            temp=pather
+            cellData[pather[0]][pather[1]]=new Array(4)
+            for(let k=0; k<4;k++) cellData[pather[0]][pather[1]][k]=1
             cellData[pather[0]][pather[1]][3]=2
         }
     }
-
-    /** Handles the lines at the boundary of the maze*/
-    const handleBoundary=(c:CanvasRenderingContext2D,currentX:number,currentY:number,row:number,column:number,currentdata:Array<boolean>,maxlines:number)=>{
-            if(row==0){
-                c.moveTo(currentX,currentY)
-                c.lineTo(currentX+width,currentY)
-                currentdata[0]=false
-                maxlines-=1
-            }else if(row==TotalCells-1){
-                c.moveTo(currentX,currentY+width)
-                c.lineTo(currentX+width,currentY+width)
-                currentdata[1]=false
-                maxlines-=1
-            }
-            if(column==0){
-                c.moveTo(currentX,currentY)
-                c.lineTo(currentX,currentY+width)
-                currentdata[2]=false
-                maxlines-=1
-            }else if(column==TotalCells-1){
-                maxlines-=1
-                currentdata[3]=false
-                c.moveTo(currentX+width,currentY)
-                c.lineTo(currentX+width,currentY+width)
-            }
-            return {maxlines,currentdata}
-    }
-
+    
     initializePath=()=>{
         Board.width=500
         Board.height=500
@@ -188,6 +170,7 @@
                 let currentX=width*column,currentY=width*row
 
                 let currentdata=new Array(4),currentdatalines=0
+                
                 for(let k=0;k<4;k++) currentdata[k]=1
                 if (cellData[row][column]) currentdata=cellData[row][column]
                 if (cellDatalines[row][column]) currentdatalines=cellDatalines[row][column]
@@ -195,7 +178,6 @@
                 currentdata.forEach((element)=>{
                     if(!element) maxlines--
                 })
-
                 if(c){
                     c.strokeStyle = "white";
                     c.beginPath()
@@ -204,6 +186,7 @@
                     // maxlines=returned.maxlines
 
                     for(let l=0;l<4;l++){
+                        if(currentdata[l]==2){maxlines--; continue}
                         if(maxlines<=0){
                             break
                         }
@@ -215,9 +198,6 @@
                             switch(l){
                                 case 0: // Up wall
                                         if(row-1 >= 0){
-                                            if(cellData[row-1][column]){
-                                                if(cellData[row-1][column][0]==2) continue
-                                            }
                                             if(cellDatalines[row-1][column] == 3) break
                                             cellDatalines[row-1][column]--
                                             cellData[row-1][column][1]=0
@@ -227,9 +207,6 @@
                                         break;
                                 case 1: // Down Wall
                                         if(row!=TotalCells-1){
-                                            if(cellData[row+1][column]){
-                                                if(cellData[row+1][column][1]==2) continue
-                                            }
                                             cellData[row+1][column]=new Array(4)
                                             for(let k=0;k<4;k++) cellData[row+1][column][k]=1
                                             cellData[row+1][column][0]=0
@@ -272,7 +249,40 @@
             }
         }
 
+        
 
+
+    }
+
+    const coverBoundary=()=>{
+        var c=Board.getContext('2d')
+        if(c)
+        for(let i=0;i<TotalCells;i++){
+            for(let j=0;j<TotalCells;j++){
+                c.beginPath()
+                c.strokeStyle="white"
+                let currentX=width*j,currentY=width*i
+                if(i==0){
+                    c.moveTo(currentX,currentY)
+                    c.lineTo(currentX+width,currentY)
+                    cellData[i][j][0]=0
+                }else if(i==TotalCells-1){
+                    c.moveTo(currentX,currentY+width)
+                    c.lineTo(currentX+width,currentY+width)
+                    cellData[i][j][1]=0
+                }
+                if(j==0){
+                    c.moveTo(currentX,currentY)
+                    c.lineTo(currentX,currentY+width)
+                    cellData[i][j][2]=0
+                }else if(j==TotalCells-1){
+                    c.moveTo(currentX+width,currentY)
+                    c.lineTo(currentX+width,currentY+width)
+                    cellData[i][j][3]=0
+                }
+                c.stroke()
+            }
+        }
     }
 
     resetVariables=()=>{
