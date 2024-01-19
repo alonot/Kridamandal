@@ -4,24 +4,315 @@
 
     $: sec="60"
     $: color="#04fc43"
+    $: message="The Maze"
+    $: gameStarted=false
 
     let end=60
-    let updater:Function
+    /**
+     * Generates the Maze
+     */
+    let initializePath:Function
+    /**
+     * Resets the Variables used by the games
+     */
+    let resetVariables:Function
+    /** Shows the loading bar while generating the maze */
+    let showLoading:Function
+    /** Starts the timer*/
+    let startTimer:Function
+    /** Hides the loading bar*/
+    let closeLoading:Function
+    /** Checks if player won or not*/
+    let checkResult:Function
+    /** Shows appropiate message*/
+    let showResult:Function
     let now:number
+    let loader: number | undefined
+    let Board: HTMLCanvasElement
+    let pathfinder:Function
+    let TotalCells=25
+    const cellData:Array<Array<Array<number>>>=new Array(TotalCells)
+    const cellDatalines:Array<Array<number>>=new Array(TotalCells)
+    const bestPath:Array<Array<number>>=[]
+    let width=500/25;
+    for(let i=0;i<TotalCells;i++){
+        cellData[i]=new Array(TotalCells)
+        cellDatalines[i]=new Array(TotalCells)
+    }
+
+    /**
+     *  Handles the running of the game 
+    */
+    const Game=()=>{
+        gameStarted=true
+        // showLoading()
+        resetVariables()
+        // closeLoading()
+        initializePath()
+        pathfinder()
+        // startTimer()  // This function calls the checkresult function  which calls showresult.
+
+    }
+
+    pathfinder=()=>{
+        var c = Board.getContext('2d')
+        var pather=[0,0]
+        var maxBackMove=0
+        var maxUpMove=10
+        if(c){
+            while(pather[1] != TotalCells-1){
+                let direction = (Math.random() *10 | 0) % 4
+                c.beginPath()
+                c.strokeStyle="red"
+                let row=pather[0],column=pather[1]
+                console.log(row,column)
+                console.log(bestPath+"")
+                let moveToX:number=0,moveToY:number=0,newX:number=0,newY:number=0
+                switch(direction){
+                    case 0:
+                            if(row>0 &&  maxUpMove>0){
+                                if(!cellData[row-1][column]){
+                                    cellData[row-1][column]=new Array(4)
+                                    for(let k=0;k<4;k++) cellData[row-1][column][k]=1
+                                }
+                                maxUpMove--
+                                cellData[row-1][column][1]=2
+                                cellData[row][column][0]=2
+                                moveToX=width*column
+                                moveToY=(width*(row))
+                                newX=(width*column+width)
+                                newY=(width*(row))
+                                row--
+                            }
+                            break
+                    case 1:
+                            if(row+1 < TotalCells){
+                                if(!cellData[row+1][column]){
+                                    cellData[row+1][column]=new Array(4)
+                                    for(let k=0;k<4;k++) cellData[row+1][column][k]=1
+                                }
+                                cellData[row+1][column][0]=2
+                                cellData[row][column][1]=2
+                                moveToX=width*column
+                                moveToY=(width*(row+1))
+                                newX=(width*column+width)
+                                newY=(width*(row+1))
+                                row++
+                            }
+                            break
+                    case 2:
+                            if(column>0 && maxBackMove>0){
+                                maxBackMove--
+                                cellData[row][column-1][3]=2
+                                cellData[row][column][2]=2
+                                moveToX=width*column
+                                moveToY=(width*(row))
+                                newX=(width*column)
+                                newY=(width*(row+1))
+                                column--
+                            }
+                            break
+                    case 3:
+                            if(column+1 < TotalCells){
+                                if(!cellData[row][column+1]){
+                                    cellData[row][column+1]=new Array(4)
+                                    for(let k=0;k<4;k++) cellData[row][column+1][k]=1
+                                }
+                                cellData[row][column+1][2]=2
+                                cellData[row][column][3]=2
+                                moveToX=width*(column+1)
+                                moveToY=(width*(row))
+                                newX=(width*column+width)
+                                newY=(width*(row+1))
+                                column++
+                            }
+                            break
+                }
+                var present=false
+                var temp=[row,column]
+                for(let y=0;y<bestPath.length;y++){
+                    if(bestPath[y][0]== temp[0] && bestPath[y][1]== temp[1] ){
+                        present=true
+                        break
+                    }
+                }
+                if(!present){
+                    c.moveTo(moveToX,moveToY)
+                    c.lineTo(newX,newY)
+                    c.stroke()
+                    pather=temp
+                    bestPath.push(pather)
+                }
+            }
+            cellData[pather[0]][pather[1]][3]=2
+        }
+    }
+
+    /** Handles the lines at the boundary of the maze*/
+    const handleBoundary=(c:CanvasRenderingContext2D,currentX:number,currentY:number,row:number,column:number,currentdata:Array<boolean>,maxlines:number)=>{
+            if(row==0){
+                c.moveTo(currentX,currentY)
+                c.lineTo(currentX+width,currentY)
+                currentdata[0]=false
+                maxlines-=1
+            }else if(row==TotalCells-1){
+                c.moveTo(currentX,currentY+width)
+                c.lineTo(currentX+width,currentY+width)
+                currentdata[1]=false
+                maxlines-=1
+            }
+            if(column==0){
+                c.moveTo(currentX,currentY)
+                c.lineTo(currentX,currentY+width)
+                currentdata[2]=false
+                maxlines-=1
+            }else if(column==TotalCells-1){
+                maxlines-=1
+                currentdata[3]=false
+                c.moveTo(currentX+width,currentY)
+                c.lineTo(currentX+width,currentY+width)
+            }
+            return {maxlines,currentdata}
+    }
+
+    initializePath=()=>{
+        Board.width=500
+        Board.height=500
+
+        var c = Board.getContext('2d')
+        
+        
+        for(let row = 0 ;row<TotalCells; row++){ // i represents row
+            for(let column=0 ;column<TotalCells;column++){ // j represents column
+
+                let currentX=width*column,currentY=width*row
+
+                let currentdata=new Array(4),currentdatalines=0
+                for(let k=0;k<4;k++) currentdata[k]=1
+                if (cellData[row][column]) currentdata=cellData[row][column]
+                if (cellDatalines[row][column]) currentdatalines=cellDatalines[row][column]
+                let maxlines=3-currentdatalines
+                currentdata.forEach((element)=>{
+                    if(!element) maxlines--
+                })
+
+                if(c){
+                    c.strokeStyle = "white";
+                    c.beginPath()
+                    // const returned=handleBoundary(c,currentX,currentY,row,column,currentdata,maxlines)
+                    // currentdata=returned.currentdata
+                    // maxlines=returned.maxlines
+
+                    for(let l=0;l<4;l++){
+                        if(maxlines<=0){
+                            break
+                        }
+                        if(!currentdata[l]) continue
+                        const todraw=(Math.random() *10 | 0)%2
+                        if(todraw == 1){
+                            // console.log(row+","+column+':'+l)
+                            maxlines-=1
+                            switch(l){
+                                case 0: // Up wall
+                                        if(row-1 >= 0){
+                                            if(cellData[row-1][column]){
+                                                if(cellData[row-1][column][0]==2) continue
+                                            }
+                                            if(cellDatalines[row-1][column] == 3) break
+                                            cellDatalines[row-1][column]--
+                                            cellData[row-1][column][1]=0
+                                        }
+                                        c.moveTo(currentX,currentY)
+                                        c.lineTo(currentX+width,currentY)
+                                        break;
+                                case 1: // Down Wall
+                                        if(row!=TotalCells-1){
+                                            if(cellData[row+1][column]){
+                                                if(cellData[row+1][column][1]==2) continue
+                                            }
+                                            cellData[row+1][column]=new Array(4)
+                                            for(let k=0;k<4;k++) cellData[row+1][column][k]=1
+                                            cellData[row+1][column][0]=0
+                                            cellDatalines[row+1][column]=1
+                                        }
+                                        c.moveTo(currentX,currentY+width)
+                                        c.lineTo(currentX+width,currentY+width)
+                                        break;
+                                case 2: // Left Wall
+                                        if(column-1 >= 0){
+                                            if(cellDatalines[row][column-1] == 3) break
+                                            cellData[row][column-1][3]=0
+                                            cellDatalines[row][column-1]--
+                                        }
+                                        c.moveTo(currentX,currentY)
+                                        c.lineTo(currentX,currentY+width)
+                                        break;
+                                case 3: // Right Wall
+                                        if(column!=TotalCells-1){
+                                            cellData[row][column+1]=new Array(4)
+                                            for(let k=0;k<4;k++) cellData[row][column+1][k]=1
+                                            cellData[row][column+1][2]=0
+                                            cellDatalines[row][column+1]=1
+                                        }
+                                        c.moveTo(currentX+width,currentY)
+                                        c.lineTo(currentX+width,currentY+width)
+                                        break;
+                            }
+                            currentdata[l]=0
+                        }
+                        c.stroke()
+                        
+                    }
+                    cellData[row][column]=currentdata
+                    // console.log(row+","+column)
+                    // console.log(cellData[row][column])
+                }
+
+                cellDatalines[row][column]=3-maxlines
+            }
+        }
+
+
+    }
+
+    resetVariables=()=>{
+        sec="60"
+        color="#04fc43"
+        message="The Maze"
+        gameStarted=false
+    }
+
+    showLoading=()=>{
+        message="Loading"
+        let count="."
+        loader=setInterval(()=>{
+            count+="."
+            if(count == "...."){
+                count = "."
+            }
+        },1000)
+    }
+
+    closeLoading=()=>{
+        clearInterval(loader)
+        gameStarted=true
+    }
 
     onMount(()=>{
         const ss=document.getElementById('ss')
         const sec_dot=document.getElementById('sec_dot')
+        let temp=document.querySelector('canvas')
+        if (temp) Board=temp
 
-        updater=()=>{
+        startTimer=()=>{
 
             let x=setInterval(()=>{
                 now=parseInt(sec)
             
-            if(ss)
-                ss.style.strokeDashoffset = 440 - (440 * now / 60)+""
             if(sec_dot)
                 sec_dot.style.transform = `rotateZ(${ now * 6}deg)`
+            if(ss)
+                ss.style.strokeDashoffset = 440 - (440 * now / 60)+""
             
             now-=1
             sec=now+""
@@ -31,17 +322,18 @@
 
             if (now ==0){
                 clearInterval(x)
+                let result = checkResult()
+                if (result == true){
+                    showResult("WON")
+                }else{
+                    showResult("LOST")
+                }
             }
             },1000)
             
         }
 
     })
-    const reset=()=>{
-            color="#04fc43"
-            sec="60"
-            updater()
-        }
 
 </script>
 
@@ -63,8 +355,8 @@
                     #MazeGame <br /> #AdventureAwaits"
                 </h4>
                 <button
-                    class="reset"
-                    on:click={reset}>PLAY</button
+                    class="play"
+                    on:click={Game}>PLAY</button
                 >
             </div>
         </div>
@@ -77,12 +369,16 @@
             <div id="seconds">{sec}<br><span>seconds</span></div>
         </div>
         <div class="halfwidth playarea">
-            <canvas class="boardcanvas"> </canvas>
+            <canvas class="boardcanvas playareacontnt" style="background-color: black;" id="board"> </canvas>
+            <h3 class="playareacontnt" id="messageBox" style={!gameStarted?"display: none;":""}>{message}</h3>
         </div>
     </div>
 </main>
 
 <style>
+    *{
+        transition: all 0.5s;
+    }
     main {
         width: 100vw;
         height: 100vh;
@@ -165,11 +461,9 @@
         border-radius: 50%;
         box-shadow: 0 0 20px var(--clr),0 0 20px var(--clr);
     }
-    .reset {
+    .play {
         box-shadow: 0 0 20px white;
         float: right;
-    }
-    .reset {
         border: white;
     }
     /* .fullwidth {
@@ -190,18 +484,33 @@
         background: transparent;
         font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
             "Lucida Sans", Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: -30px;
     }
     .halfwidth {
-        width: 40%;
+        width: 45%;
     }
     .playarea {
         display: flex;
         align-self: center;
     }
+    .playarea h3{
+        display: flex;
+        font-size: 3em;
+        align-items: center;
+        justify-content: center;
+    }
     .boardcanvas {
+        padding: 7px;
+        display: flex;
+        background-color: black;
+        align-items: center;
+        justify-content: center;
+    }
+    .playareacontnt{
         border-radius: 15px;
-        align-self: center;
-        margin: 2em auto;
         width: 500px;
         backdrop-filter: blur(10px);
         height: 500px;
