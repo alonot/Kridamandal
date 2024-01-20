@@ -521,7 +521,10 @@
         width: 100%;
         position: relative;
         align-self: center;
-        top: 90px;
+        top: 70px;
+    }
+    .playbtn{
+        margin-top: 30px;
     }
     .cube{
         position: absolute;

@@ -347,7 +347,7 @@
     };
 
     checkResult = () => {
-        if(playerpos[1]==destination[1] && playerpos[0] == destination[2])
+        if(playerpos[1]==destination[1] && playerpos[0] == destination[0])
         return true
         else
         return false
@@ -375,6 +375,7 @@
                                 player.style.transform = `translateX(${
                                     playerpos[1] * width
                                 }px) translateY(${playerpos[0] * width}px)`;
+                                checkResult()
                             } else {
                                 console.log(
                                     cellData[playerpos[0]][playerpos[1]][0],
@@ -391,6 +392,7 @@
                                 player.style.transform = `translateX(${
                                     playerpos[1] * width
                                 }px) translateY(${playerpos[0] * width}px)`;
+                                checkResult()
                             } else {
                                 console.log(
                                     cellData[playerpos[0]][playerpos[1]][1],
@@ -410,6 +412,7 @@
                                 player.style.transform = `translateX(${
                                     playerpos[1] * width
                                 }px) translateY(${playerpos[0] * width}px)`;
+                                checkResult()
                             } else {
                                 console.log(
                                     cellData[playerpos[0]][playerpos[1]][2],
@@ -428,6 +431,7 @@
                                 player.style.transform = `translateX(${
                                     playerpos[1] * width
                                 }px) translateY(${playerpos[0] * width}px)`;
+                                checkResult()
                             } else {
                                 console.log(
                                     cellData[playerpos[0]][playerpos[1]][3],
@@ -467,8 +471,11 @@
             if (x) {
                 clearInterval(x);
             }
+            let starting :Date = new Date()
+
             x = setInterval(() => {
-                now = parseInt(sec);
+                now =60 - ((Math.abs((new Date()).valueOf() - starting.valueOf())) / 1000) | 0
+                // console.log(now)
 
                 if (sec_dot)
                     sec_dot.style.transform = `rotateZ(${(now - 1) * 6}deg)`;
@@ -476,15 +483,15 @@
                     ss.style.strokeDashoffset =
                         440 - (440 * (now - 1)) / 60 + "";
 
-                now -= 1;
+                // now -= 1;
                 sec = now + "";
-                if (now == 10) {
+                if (now <= 10) {
                     color = "red";
                     if(player)
                     player.style.backgroundImage=`url("/src/assets/fear.png")`
                 }
 
-                if (now == 0) {
+                if (now <= 0) {
                     clearInterval(x);
                     console.log(destination+"<<>>"+playerpos)
                     let result = checkResult()
@@ -579,8 +586,7 @@
         display: flex;
         flex-direction: column;
         margin-top: auto;
-        margin-left: -40px;
-        margin-right: 80px;
+        margin-right: 20px;
         width: 150px;
         height: 100%;
         justify-content: space-between;
@@ -695,6 +701,7 @@
     .playarea {
         display: flex;
         align-self: center;
+        margin-right: 3em;
     }
     .playarea div {
         display: flex;
@@ -738,7 +745,7 @@
         height: 500px;
         background-color: transparent;
         border: 2px black solid;
-        box-shadow: 0 0 120px whitesmoke;
+        box-shadow: 0 0 60px whitesmoke;
     }
     .Main_Container {
         display: flex;
