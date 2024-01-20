@@ -18,7 +18,7 @@
         current=str
     }
 
-    function handleclick(event){
+    function handleclick(event: { preventDefault: () => void; currentTarget: any; }){
       console.log("pp")
       event.preventDefault()
       const link= event.currentTarget
