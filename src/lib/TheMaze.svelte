@@ -488,7 +488,7 @@
                 if (now <= 10) {
                     color = "red";
                     if(player)
-                    player.style.backgroundImage=`url("/src/assets/fear.png")`
+                    player.style.backgroundImage=`url("/src/assets/fear.jpg")`
                 }
 
                 if (now <= 0) {
@@ -545,8 +545,8 @@
             </div>
         </div>    
         <div class="halfwidth playarea">
-            <div id="img" style="background-image: url('/src/assets/smile.png');"></div>
-            <div id="imgDest" style="background-image: url('/src/assets/train.png');"></div>
+            <div id="img"></div>
+            <div id="imgDest" ></div>
             <canvas
                 class="boardcanvas playareacontnt"
                 style={!gameStarted ? "display: none;" : ""}
@@ -725,11 +725,13 @@
         background-size: cover;
         width: 17px;
         height: 17px;
+        background-image: url('/src/assets/train.jpg');
     }
 
     #img{
         left: 44px;
         top: 10px;
+        background-image: url('/src/assets/smile.jpg');
         transition: all 0.5s;
         position: relative;
         background-position: center;
