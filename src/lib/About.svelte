@@ -28,7 +28,6 @@
         background-image: radial-gradient(gray,rgb(73, 73, 73),rgb(26, 24, 24),black 90%);
         background-attachment: fixed;
         background-size: cover;
-        min-width: 1200px;
         color: whitesmoke;
     }
     h3{
@@ -72,29 +71,41 @@
             8px 8px #fff,
             15px 15px #494444;
     }
-    @media(max-width:1000px){
+    @media(max-width:900px){
         main{
         width: 100vw;
         min-width: 0px;
-        display: block;
-        background-repeat: repeat-y;
-    }
-    *{
-        font-size: smaller;
-    }
-    h1{
-        width: 50%;
-    }
-    .heading{
-        font-size: 40px;
-        margin: 0;
         display: flex;
-        align-self: center;
-    }
-    .textBox{
-        max-height: 80px;
-        max-lines: 1;
-        align-self: center;
-    }
+        flex-direction: column;
+        background-repeat: repeat-y;
+        }
+        *{
+            font-size: large;
+        }
+        h1{
+            width: 100%;
+            text-align: center;
+        }
+        .heading{
+            font-size: 40px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .textBox{
+            max-height: none;
+            display: flex;
+            align-self: center;
+        }
+        h3{
+            margin-bottom: 0;
+        }
+        .card{
+            display: flex;
+            flex-direction: column;
+        }
+        .Main_Container{
+            margin: 20px 0;
+        }
     }
 </style>

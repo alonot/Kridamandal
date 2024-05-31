@@ -5,6 +5,9 @@
     $: sec = "60";
     $: color = "#04fc43";
     $: gameStarted = false;
+    $: totalTime = 60;
+    $: paused = false;
+    let screenWidth: number;
 
     let end = 60;
     /**
@@ -25,6 +28,7 @@
     let checkResult: Function;
     /** Shows appropiate massage*/
     let showResult: Function;
+    let resetPlayer
 
     let now: number;
     let loader: number | undefined;
@@ -51,17 +55,34 @@
      *  Handles the running of the game
      */
     const Game = () => {
-        gameStarted = true;
-        showLoading();
-        resetVariables();
-        setTimeout(() => {
-            pathfinder();
-            initializePath();
-            coverBoundary();
-            closeLoading();
-            startTimer(); // This function calls the checkresult function  which calls showresult.
-        }, 10);
-    };
+        if (gameStarted){ // play pause the game
+            pauseGame()
+        }else{
+            gameStarted = true;
+            showLoading();
+            resetVariables();
+            setTimeout(() => {
+                pathfinder();
+                initializePath();
+                coverBoundary();
+                closeLoading();
+                paused = false;
+                startTimer(); // This function calls the checkresult function  which calls showresult.
+            }, 7);
+        }7  };
+
+    let clearX: Function;
+
+    const pauseGame = () => {
+        paused = !paused
+        totalTime = now + 1
+        if (paused){
+            clearX()
+            msg = "THE MAZE"
+        }else{
+            startTimer()
+        }
+    }
 
     pathfinder = () => {
         var c = Board.getContext("2d");
@@ -160,9 +181,9 @@
     };
 
     initializePath = () => {
-        Board.width = 500;
-        Board.height = 500;
-
+        Board.width = screenWidth;
+        Board.height = screenWidth;
+        width = screenWidth / 25;
         var c = Board.getContext("2d");
 
         for (let row = 0; row < TotalCells; row++) {
@@ -315,7 +336,9 @@
         sec = "60";
         color = "#04fc43";
         playerpos = [0, 0];
+        totalTime = 60
         gameStarted = false;
+        paused = false
         TotalCells = 25;
         cellData = new Array(TotalCells);
         cellDatalines = new Array(TotalCells);
@@ -343,7 +366,6 @@
     closeLoading = () => {
         clearInterval(loader);
         gameStarted = true;
-        console.log("op" + gameStarted);
     };
 
     checkResult = () => {
@@ -358,6 +380,7 @@
     }
 
     onMount(() => {
+        screenWidth = document.documentElement.clientWidth;
         const ss = document.getElementById("ss");
         const sec_dot = document.getElementById("sec_dot");
         let temp = document.querySelector("canvas");
@@ -431,7 +454,6 @@
                                 player.style.transform = `translateX(${
                                     playerpos[1] * width
                                 }px) translateY(${playerpos[0] * width}px)`;
-                                checkResult()
                             } else {
                                 console.log(
                                     cellData[playerpos[0]][playerpos[1]][3],
@@ -445,7 +467,7 @@
             // console.log(
             //     cellData[playerpos[0]][playerpos[1]] + "::" + playerpos,
             // );
-            if (player) {
+            if (player && gameStarted &&  !paused) {
                 switch (e.key) {
                     case "ArrowUp":
                         moveUp()
@@ -461,20 +483,29 @@
                         break;
                 }
             }
+            if(checkResult()){
+                showResult("WON")
+                gameStarted = false
+                paused = false
+            }
         };
+        clearX = () => {
+            if (x) {
+                clearInterval(x)
+            }
+        }
+
 
         startTimer = () => {
             if(train)
             train.style.transform = `translateX(${
                                     destination[1] * width
                                 }px) translateY(${destination[0] * width}px)`;
-            if (x) {
-                clearInterval(x);
-            }
+            clearX()
             let starting :Date = new Date()
 
             x = setInterval(() => {
-                now =60 - ((Math.abs((new Date()).valueOf() - starting.valueOf())) / 1000) | 0
+                now =totalTime - ((Math.abs((new Date()).valueOf() - starting.valueOf())) / 1000) | 0
                 // console.log(now)
 
                 if (sec_dot)
@@ -493,13 +524,14 @@
 
                 if (now <= 0) {
                     clearInterval(x);
-                    console.log(destination+"<<>>"+playerpos)
+                    // console.log(destination+"<<>>"+playerpos)
                     let result = checkResult()
                     if (result == true){
                         showResult("WON")
                     }else{
                         showResult("LOST")
                     }
+                    gameStarted = false
                 }
             }, 1000);
         };
@@ -513,21 +545,6 @@
         <h1 class="heading fonter">The Maze</h1>
     </div>
     <div class="Main_Container">
-        <div class="halfwidth cardholder">
-            <div class="card">
-                <h4>
-                    "Embark on a thrilling journey through the twists and turns
-                    of our Maze Game! Prepare to challenge your wits and
-                    navigate the labyrinthine paths that await. This interactive
-                    adventure promises excitement at every corner, testing your
-                    problem-solving skills and providing a maze-ing fun
-                    experience. Are you ready to unravel the mysteries within?
-                    Step into the maze and let the excitement begin!<br /><br />
-                    #MazeGame <br /> #AdventureAwaits"
-                </h4>
-                <button class="play" on:click={Game}>PLAY</button>
-            </div>
-        </div>
         <div class="timerDiv">
             <div class="timer" style="--clr:{color}">
                 <div class="dots sec_dot" id="sec_dot"></div>
@@ -543,20 +560,24 @@
                 <button class="btn" style="grid-row: 2;" on:click={()=>{moveDown()}}>S</button>
                 <button class="btn" style="grid-row: 2;" on:click={()=>{moveRight()}}>D</button>
             </div>
+
+            <button class="play" on:click={Game}>{(gameStarted) ? ((paused) ? "PLAY" : "PAUSE") : "PLAY"}</button>
         </div>    
-        <div class="halfwidth playarea">
+        <div class="{(screenWidth >900)?"halfwidth":""} playarea" 
+            style={(paused) ? "filter: blur(8px);" : ""};    
+        >
             <div id="img"></div>
             <div id="imgDest" ></div>
             <canvas
                 class="boardcanvas playareacontnt"
                 style={!gameStarted ? "display: none;" : ""}
-                id="board"
+                id="board" 
             >
             </canvas>
             <div
                 class="playareacontnt"
                 id="messageBox"
-                style={gameStarted ? "display: none;" : ""}
+                style={gameStarted? "display: none;" : ""}
             >
                 {msg}
             </div>
@@ -576,7 +597,6 @@
         background-image: url("/src/assets/img2.jpeg");
         background-attachment: fixed;
         background-size: cover;
-        min-width: 1200px;
         color: whitesmoke;
         font-family: "Poppins", times-new-roman, "Lucida Sans",
             "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode",
@@ -668,39 +688,17 @@
             0 0 20px var(--clr);
     }
     .play {
-        box-shadow: 0 0 20px white;
-        float: right;
-        border: white;
+        margin: 0 20px;
+        margin-top: 20px;
     }
-    /* .fullwidth {
-        width: 100%;
-    } */
-    .card {
-        backdrop-filter: blur(10px);
-        border: 3px black solid;
-        width: 300px;
-        height: 400px;
-        line-break: auto;
-        border-radius: 15px;
-        transform-style: preserve-3d;
-        margin: 3em auto;
-        box-shadow: 0 0 60px red;
-    }
-    .cardholder {
-        background: transparent;
-        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
-            "Lucida Sans", Arial, sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: -30px;
-    }
+    
     .halfwidth {
         width: 45%;
     }
     .playarea {
         display: flex;
         align-self: center;
+        justify-content: center;
         margin-right: 3em;
     }
     .playarea div {
@@ -723,7 +721,7 @@
         top: 10px;
         background-position: center;
         background-size: cover;
-        width: 17px;
+        min-width: 17px;
         height: 17px;
         background-image: url('/src/assets/train.jpg');
     }
@@ -736,7 +734,7 @@
         position: relative;
         background-position: center;
         background-size: cover;
-        width: 17px;
+        min-width: 17px;
         height: 17px;
         z-index: 5;
     }
@@ -756,7 +754,6 @@
     .textBox {
         width: 100%;
         display: inline-block;
-        margin-top: 2em;
     }
     .fonter {
         font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
@@ -767,7 +764,9 @@
     .heading {
         font-size: 100px;
         text-align: center;
-        margin: auto;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        top: 0;
         -webkit-text-fill-color: transparent;
         text-shadow:
             8px 8px #fff,
@@ -795,7 +794,65 @@
         .textBox {
             max-height: 80px;
             max-lines: 1;
-            align-self: center;
+            display: flex;
+            justify-content: center;
+        }
+        .Main_Container{
+            flex-direction: column;
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }   
+        .timerDiv{
+            margin: 20px 0 ;
+            width: 100%;
+            flex-direction: row;
+            display: flex;
+            align-items: center;
+        }
+        .timer{
+            scale: 0.5;
+        }
+        #seconds span{
+            margin: 10px 5px;
+            font-size: 7px;
+        }
+        .play{
+            height: 40px;
+            width: 100%;
+            margin: 0 30px;
+        }
+        .arrows{
+            height: 70px;
+            margin: 0;
+        }
+        .btn{
+            width: 30px;
+            height: 30px;
+            font-size: 10px;
+        }
+        .playarea{
+            width: 90vw;
+            height: 90vw ;
+            margin: 0;
+        }
+        .playareacontnt{
+            width: 90vw;
+            height: 90vw;
+        }
+
+        #img,#imgDest{
+            min-width: 7px;
+            max-height: 7px;
+        }
+        #imgDest{
+            left: px;
+            top: 10px;
+        }
+
+        #img{
+            left: 25px;
+            top: 10px;
         }
     }
 </style>

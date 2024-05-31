@@ -4,103 +4,74 @@
     import TheMaze from './lib/TheMaze.svelte';
     import About from './lib/About.svelte';
     import { onMount } from 'svelte';
+    $: currentGame = 1
 
     let screenWidth:number
 
     onMount(()=>{
       screenWidth=document.documentElement.clientWidth | 0
-      console.log(screenWidth)
     })
 
-    $: current = "one"
-    $: hidden=true
-    const clicked=(str:string)=>{
-        current=str
-    }
-
-    function handleclick(event: { preventDefault: () => void; currentTarget: any; }){
-      console.log("pp")
-      event.preventDefault()
-      const link= event.currentTarget
-      const href=link?.href
-      if(href){
-        const id= new URL(href).hash.replace('#','')
-        const comp=document.getElementById(id)
-        current=id
-        window.scrollTo({
-          left:comp?.offsetLeft,
-          behavior:'smooth'
-        })
-      }
-    }
-
-    const ids=["home","tictac","maze","about"]
+    let ids = ["home","currentGame"]
     window.onscrollend=(e)=>{
       if(document.documentElement.clientWidth > 600){
         let percent=document.documentElement.scrollLeft/document.documentElement.scrollWidth
         percent+=0.125
 
         let tomove=Math.floor(Number(percent*4))
-        current=ids[tomove]
-        const element=document.getElementById(ids[tomove])
+        let id = ids[tomove]
+        const element=document.getElementById(id)
         window.scrollTo({
           left:element?.offsetLeft,
           behavior:'smooth'
         })
       }else{
-          let percent=document.documentElement.scrollTop/document.documentElement.scrollHeight
-        percent+=0.125
+        //   let percent=document.documentElement.scrollTop/document.documentElement.scrollHeight
+        // percent+=0.125
 
-        let tomove=Math.floor(Number(percent*4))
-        current=ids[tomove]
-        const element=document.getElementById(ids[tomove])
-        window.scrollTo({
-          top:element?.offsetTop
-        })
+        // let tomove=Math.floor(Number(percent*4))
+        // let id = ids[tomove]
+        // const element=document.getElementById(id)
+        // window.scrollTo({
+        //   top:element?.offsetTop
+        // })
       }
-      console.log(current)
     }
 
+    const backBtnPressed = () => {
+      const element=document.getElementById("home")
+      if (screenWidth >900){
+        window.scrollTo({
+          left:element?.offsetLeft,
+          behavior:'smooth'
+        })
+      }else{
+        window.scrollTo({
+          top:element?.offsetTop,
+          behavior:'smooth'
+        })
+      }
+    }
+  
 
 </script>
 
 <main>
 
-  <div id="header">
-    {#if screenWidth>600}
-      <nav>
-        <div class="scrollholder">
-            <span class="scroller {current}"></span>
-        </div>
-        <div class="itemHolder">
-            <a href="#home" on:click={handleclick} class="{current=="home"?"yellow":"white"}" on:click={()=>{clicked("home")}}>Home</a>
-            <a href="#tictac" on:click={handleclick} class="{current=="tictac"?"yellow":"white"}" on:click={()=>{clicked("tictac")}}>TicTacToe</a>
-            <a href="#maze" on:click={handleclick} class="{current=="maze"?"yellow":"white"}" on:click={()=>{clicked("maze")}}>The Maze</a>
-            <a href="#about" on:click={handleclick} class="{current=="about"?"yellow":"white"}" on:click={()=>{clicked("about")}}>About</a>
-        </div>
-      </nav>
-      {:else}
-      <nav>
-        <div class="itemHolder" style="display: flex;left:{hidden?"-100%":"0"}">
-            <a href="#home" on:click={handleclick} class="{current=="home"?"yellow":"white"}" on:click={()=>{clicked("home")}}>Home</a>
-            <a href="#tictac" on:click={handleclick} class="{current=="tictac"?"yellow":"white"}" on:click={()=>{clicked("tictac")}}>TicTacToe</a>
-            <a href="#maze" on:click={handleclick} class="{current=="maze"?"yellow":"white"}" on:click={()=>{clicked("maze")}}>The Maze</a>
-            <a href="#about" on:click={handleclick} class="{current=="about"?"yellow":"white"}" on:click={()=>{clicked("about")}}>About</a>
-        </div>
-      </nav> 
-    {/if}
-  </div>
   <div id="home" class="page">
-    <Homepage ></Homepage>
+    <Homepage bind:currentGame={currentGame}></Homepage>
   </div>
-  <div id="tictac" class="page">
-    <TicTacToe ></TicTacToe>
-  </div>
-  <div id="maze" class="page">
-    <TheMaze ></TheMaze>
-  </div>
-  <div id="about" class="page">
-    <About></About>
+  <div id="currentGame" class="page">
+    <div id="backBtn">
+      <button on:click={backBtnPressed}>Back</button>
+    </div>
+    {#if currentGame == 1 }
+      <TicTacToe ></TicTacToe>
+    {:else if currentGame == 2}
+      <TheMaze ></TheMaze>
+    {:else}
+      <About></About>
+    {/if}
   </div>
 </main>
 
@@ -113,31 +84,19 @@
   .page{
     height: 100vh;
   }
+  #backBtn{
+    margin: 20px;
+    position: absolute;
+    z-index: 2;
+  }
 
-  @media(max-width:1000px){
+  @media(max-width:900px){
     main{
       display: block;
       height: auto;
       transition: all 0.5s;
       width: 100vw;
-      max-height: 400vh;
-    }
-    .itemHolder{
-      margin-top: 2em;
-      position: relative;
-      height: 100vh;
-      background: transparent;
-      flex-direction: column;
-    }
-    .itemHolder::before{
-      background-color: black;
-      position: absolute;
-      content: '';
-      z-index: -1;
-      opacity: 0.4;
-    }
-    .itemHolder a{
-      padding: 2em;
+      max-height: 200vh;
     }
   }
 </style>

@@ -497,8 +497,9 @@
         font-weight: bold;
     }
     .heading{
-        width: auto;
+        width: fit-content;
         max-lines: 1;
+        text-align: center;
         font-size: 100px;
         -webkit-text-fill-color: transparent;   
         text-shadow: 8px 8px #fff, 15px 15px #494444;
@@ -616,7 +617,7 @@
     .O{
         background-image: url('/src/assets/O-symbol.svg');
     }
-    @media(max-width:1000px){
+    @media(max-width:900px){
         main , #tictactoe{
         width: 100vw;
         min-width: 0px;
@@ -655,6 +656,7 @@
         width: 50%;
         max-width: 50vw;
         position: relative;
+        bottom: 2em;
         min-height: 150px;
     }
     #scorediv1{
