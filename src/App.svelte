@@ -4,7 +4,12 @@
     import TheMaze from './lib/TheMaze.svelte';
     import About from './lib/About.svelte';
     import { onMount } from 'svelte';
+    import PopUpBox from './lib/Components/PopUpBox.svelte';
+    import PopUp, { GAMEMODE } from './lib/Helpers/PopUp';
+
     $: currentGame = 1
+    $: gameMode = GAMEMODE.OFFLINE;
+    $: PopUpObj = new PopUp("","",false,[]) 
 
     let screenWidth:number
 
@@ -14,7 +19,7 @@
 
     let ids = ["home","currentGame"]
     window.onscrollend=(e)=>{
-      if(document.documentElement.clientWidth > 600){
+      if(document.documentElement.clientWidth > 900){
         let percent=document.documentElement.scrollLeft/document.documentElement.scrollWidth
         percent+=0.125
 
@@ -25,16 +30,6 @@
           left:element?.offsetLeft,
           behavior:'smooth'
         })
-      }else{
-        //   let percent=document.documentElement.scrollTop/document.documentElement.scrollHeight
-        // percent+=0.125
-
-        // let tomove=Math.floor(Number(percent*4))
-        // let id = ids[tomove]
-        // const element=document.getElementById(id)
-        // window.scrollTo({
-        //   top:element?.offsetTop
-        // })
       }
     }
 
@@ -58,15 +53,20 @@
 
 <main>
 
+  {#if (PopUpObj.isOn)}
+  <div class="popUpHolder">
+    <PopUpBox bind:PopUpObj= {PopUpObj}/>
+  </div>
+  {/if}
   <div id="home" class="page">
-    <Homepage bind:currentGame={currentGame}></Homepage>
+    <Homepage bind:currentGame={currentGame} bind:PopUpObj = {PopUpObj} bind:currentMode={gameMode}></Homepage>
   </div>
   <div id="currentGame" class="page">
     <div id="backBtn">
       <button on:click={backBtnPressed}>Back</button>
     </div>
     {#if currentGame == 1 }
-      <TicTacToe ></TicTacToe>
+      <TicTacToe bind:gameMode={gameMode}></TicTacToe>
     {:else if currentGame == 2}
       <TheMaze ></TheMaze>
     {:else}
@@ -90,6 +90,17 @@
     z-index: 2;
   }
 
+  .popUpHolder{
+    position: absolute;
+    z-index: 400;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #6161614a;
+    transition: all 0.5s ease;
+  }
   @media(max-width:900px){
     main{
       display: block;

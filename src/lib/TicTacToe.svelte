@@ -1,26 +1,42 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
+    import { GAMEMODE } from "./Helpers/PopUp";
+    import { checkWinner, getAIMove } from "./Helpers/TicTacToeHelpers";
+    
+    export let gameMode:number;
 
     let board:HTMLDivElement
+    // initialization
+    // =======
+    let boardvalues=["000","000","000"]  // used to check winner
+    let currentplayer=0
+    $: isplaying=false
+    $: player1=0 // score of player1
+    $: gotwinner=false 
+    $: player2=0 // score of player2
+    $: div=["","","","","","","","",""] // the array which is shown on the user screen
+    $: filled_blocks = 0 // counts the nuber of filled blocks
+    //  ==============
+
+
     onMount(()=>{
-        boardvalues=[[0,0,0],[0,0,0],[0,0,0]]
+        boardvalues=["000","000","000"]
+        // Setting the rotation of board on mousemove
         document.onmousemove=(e)=>{
             if (!isplaying){
-            // board.style.transform=`rotateX(0deg) rotateY(360deg)`
-            //  console.log(e) 
-             const dim=(board.getBoundingClientRect())
-            //  console.log(dim)
-             if (dim.left < e.screenX && dim.right> e.screenX && dim.top < e.screenY && dim.bottom > e.screenY) {
-                let posX=e.screenX-dim.left;
-                let posY=e.screenY-dim.top;
-                let percenX=Number(posX/dim.width*60)
-                let percenY=Number(posY/dim.height*60)
-                // console.log(`${percenX} : ${percenY}`)
-                percenX=(percenX<30)?percenX:percenX-60
-                percenY=(percenY>30)?percenY:percenY-60
-                // console.log(`${percenX} : ${percenY}`)
-                board.style.transform=`rotateX(${percenX}deg) rotateY(${percenY}deg)`
+                // board.style.transform=`rotateX(0deg) rotateY(360deg)`
+                //  console.log(e) 
+                const dim=(board.getBoundingClientRect())
+                //  console.log(dim)
+                if (dim.left < e.screenX && dim.right> e.screenX && dim.top < e.screenY && dim.bottom > e.screenY) {
+                    let posX=e.screenX-dim.left;
+                    let posY=e.screenY-dim.top;
+                    let percenX=Number(posX/dim.width*60)
+                    let percenY=Number(posY/dim.height*60)
+                    percenX=(percenX<30)?percenX:percenX-60
+                    percenY=(percenY>30)?percenY:percenY-60
+                    board.style.transform=`rotateX(${percenX}deg) rotateY(${percenY}deg)`
              }else{
                 board.style.transform=`rotateX(-30deg) rotateY(30deg)`
             }
@@ -28,125 +44,106 @@
         }
     })
 
-    let xplaces:Array<number>=[]
-    let yplaces:Array<number>=[]
-    let boardvalues=[[0,0,0],[0,0,0],[0,0,0]]
-    let currentplayer=1
-    $: isplaying=false
-    $: player1=0
-    $: gotwinner=false
-    $: player2=0
-    $: div=["","","","","","","","",""]
-
-    function checkKar(prevpos:Array<number>,currentpos:Array<number>,nextpos:Array<number>){
-        let hasSameValue=(boardvalues[prevpos[0]][prevpos[1]]==boardvalues[currentpos[0]][currentpos[1]] && boardvalues[nextpos[0]][nextpos[1]]==boardvalues[currentpos[0]][currentpos[1]])
-        let slope1=(Math.abs(currentpos[1]-prevpos[1]) == Math.abs(nextpos[1] - currentpos[1])) && (Math.abs(currentpos[0]-prevpos[0]) == Math.abs(nextpos[0] - currentpos[0]))
-        let slope2=(Math.abs(nextpos[1]-prevpos[1]) == Math.abs(prevpos[1] - currentpos[1])) && (Math.abs(nextpos[0]-prevpos[0]) == Math.abs(prevpos[0] - currentpos[0]))
-        let slope3=(Math.abs(currentpos[1]-nextpos[1]) == Math.abs(nextpos[1] - prevpos[1])) && (Math.abs(currentpos[0]-nextpos[0]) == Math.abs(nextpos[0] - prevpos[0]))
-        
-        let is2SlopesEqual=slope1 || slope2 ||slope3
-        return hasSameValue && is2SlopesEqual
-    }
-
-
+    /**
+     * Handles the click of the user on the borad
+     * @param index
+     */
     function handleclick(index:number){
         if (div[index] == ""){
-            div[index]=currentplayer==0?'X':'O'
-            currentplayer=(currentplayer+1)%2
-            let currentpos=[(index/3) | 0,index%3]
-            boardvalues[currentpos[0]][currentpos[1]]=currentplayer==0?1:2
-            if(currentplayer==0) xplaces.push(index) 
-            else yplaces.push(index)
+            if (updateBoard(index)){
+                return;
+            }
+            nextTurn()
             
-            const lst=currentplayer==0?xplaces:yplaces
-            // console.log(xplaces)
-            // console.log(yplaces)
-            if ((xplaces).length+(yplaces).length==9){
-                        board.style.pointerEvents="none"
-                        board.style.filter="blur(5px)"
-                        setTimeout(() => {
-                            div=["","","","","","","","",""]
-                            board.style.pointerEvents="auto"
-                            boardvalues=[[0,0,0],[0,0,0],[0,0,0]]
-                            xplaces=[];yplaces=[]
-                            gotwinner=false
-                            board.style.filter="blur(0px)"
-                        }, 2000);
-                    }
-
-            
-            lst.forEach(pos => {
-                let prevpos,nextpos
-                if(pos==index || gotwinner) return
-                if(pos<index){  
-                    prevpos=[pos/3 | 0,pos%3]
-                    let slope=[(currentpos[0]-prevpos[0]),(currentpos[1]-prevpos[1])]
-                    // console.log("sl:"+slope)
-
-                    if(slope[0]>1 || slope[1] >1) return
-                    nextpos=[currentpos[0]+slope[0],currentpos[1]+slope[1]]
-                    nextpos=[nextpos[0]%3,nextpos[1]%3]
-                    // console.log(nextpos)
-                    // console.log(currentpos)
-                    if(nextpos[0]<0 || nextpos[1]<0){
-                        // if(slope[0]==1 && slope[0]==1) return
-                        nextpos=[nextpos[0]<0?nextpos[0]+3:nextpos[0],nextpos[1]<0?nextpos[1]+3:nextpos[1]]
-                    }
-                }else{
-                    nextpos=[pos/3 | 0,pos%3]
-                    let slope=[(nextpos[0]-currentpos[0]),(nextpos[1]-currentpos[1])]
-                    // console.log("s2:"+slope)
-                    if(slope[0]>1 || slope[1] >1) return
-                    prevpos=[currentpos[0]-slope[0],currentpos[1]-slope[1]]
-                    prevpos=[prevpos[0]%3,prevpos[1]%3]
-                    // console.log(prevpos)
-                    if(prevpos[0]<0 || prevpos[1]<0){
-                        // if(slope[0]==1 && slope[0]==1) return
-                        prevpos=[prevpos[0]<0?prevpos[0]+3:prevpos[0],prevpos[1]<0?prevpos[1]+3:prevpos[1]]
-                    }
-                }   
-                // console.log(prevpos+"\t:"+currentpos+":\t:"+nextpos) 
-                if(checkKar(prevpos,currentpos,nextpos)){
-                    let winner=boardvalues[currentpos[0]][currentpos[1]]
-                    console.log("winner "+winner)
-                    if(winner==2){
-                        player1+=1
-                    }else if(winner==1){
-                        player2+=1
-                    }
-                    if(winner!=0){
-                        board.style.pointerEvents="none"
-                        board.style.filter="blur(5px)"
-                        gotwinner=true
-                        setTimeout(() => {
-                            div=["","","","","","","","",""]
-                            board.style.pointerEvents="auto"
-                            boardvalues=[[0,0,0],[0,0,0],[0,0,0]]
-                            xplaces=[];yplaces=[]
-                            gotwinner=false
-                            board.style.filter="none"
-                        }, 2000);
-                    }
-                }
-            });
-
-
         }
     }
-    const play=() => {
-        isplaying=true
 
+    function updateBoard(index:number):Boolean{
+        div[index]=currentplayer==0?'X':'O'
+            let currentpos=[(index/3) | 0,index%3]
+            
+            boardvalues[currentpos[0]] = boardvalues[currentpos[0]].substring(0,currentpos[1]) +  
+            ((currentplayer==0)?"1":"2") + boardvalues[currentpos[0]].substring(currentpos[1]+1)
+            
+            filled_blocks++;
+
+            // Checks for winner
+            if (checkWinner(boardvalues,currentplayer == 0 ? 1: 2)){
+                let winner=currentplayer
+                if(winner==0){
+                    player1+=1
+                }else if(winner==1){
+                    player2+=1
+                }
+                board.style.pointerEvents="none"
+                board.style.filter="blur(5px)"
+                gotwinner=true
+                setTimeout(() => {
+                    reset(true)
+                    nextTurn()
+                }, 2000);
+                return true;
+            }
+            
+            if (filled_blocks==9){
+                // reset the visual board
+                board.style.pointerEvents="none"
+                board.style.filter="blur(5px)"
+                setTimeout(() => {
+                    reset(true);
+                    nextTurn();
+                }, 2000);
+                return true;
+            }
+
+            currentplayer=(currentplayer+1)%2
+            return false;
     }
-    const reset=() => {
-        isplaying=false
+
+    function nextTurn(){
+        if (gameMode == GAMEMODE.AI){ // AI
+            if (currentplayer == 1){
+                moveAi();
+            }
+        }else if (gameMode == GAMEMODE.MULTIPLAYER){
+            // const nextMOVE = GETNEXTMOVE(thisplayermove = index)
+            // displayMove()
+        }else if (gameMode == GAMEMODE.OFFLINE){
+            // Eat a 5-star, Do nothing.
+        }
+    }
+
+
+    function moveAi(){
+        const AIMove = getAIMove(boardvalues,2);
+        updateBoard(AIMove);
+        
+    }
+
+    /**
+     * Starts the game
+     */
+    const play=() => {
+        reset(false)
         player1=0
         player2=0
+        isplaying=true
+        nextTurn()
+    }
+    
+    /**
+     * Resets the game with a parameter(willplay) that if players are going to continue the game or not .
+     * @param willplay
+     */
+    const reset=(willplay:boolean) => {
+        isplaying=willplay
         div=["","","","","","","","",""]
         board.style.pointerEvents="auto"
-        boardvalues=[[0,0,0],[0,0,0],[0,0,0]]
-        xplaces=yplaces=[]
+        boardvalues=["000","000","000"]
+        filled_blocks = 0;
         gotwinner=false
         board.style.filter="blur(0px)"
+        currentplayer=(currentplayer+1)%2
     }
 
 </script>
@@ -306,7 +303,7 @@
             </div></center>
             <!-- svelte-ignore a11y-no-static-element-interactions -->
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="reset" on:click={reset} style="background-color: green; transform: rotateY({isplaying?'0deg':'90deg'}); {gotwinner?"pointer-events:none":""}"></div>
+            <div class="reset" on:click={() => reset(false)} style="background-color: green; transform: rotateY({isplaying?'0deg':'90deg'}); {gotwinner?"pointer-events:none":""}"></div>
         </div>
     </div>
     <div class="scorecardholder" id="scorediv2">
@@ -425,7 +422,7 @@
         background-attachment:fixed;
         background-image: url('/src/assets/img.jpg');
         background-size: cover;
-        min-width: 1120px;
+        /* min-width: 1120px; */
         min-height: 700;
     }
     h1{

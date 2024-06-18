@@ -2,14 +2,13 @@
     import { onMount } from "svelte";
 
     $: msg = "The Maze";
-    $: sec = "60";
+    $: sec = "45";
     $: color = "#04fc43";
     $: gameStarted = false;
-    $: totalTime = 60;
+    $: totalTime = 45;
     $: paused = false;
     let screenWidth: number;
 
-    let end = 60;
     /**
      * Generates the Maze
      */
@@ -28,7 +27,6 @@
     let checkResult: Function;
     /** Shows appropiate massage*/
     let showResult: Function;
-    let resetPlayer
 
     let now: number;
     let loader: number | undefined;
@@ -45,6 +43,8 @@
     let playerpos = [0, 0];
     let destination:Array<number>=[]
     let moveUp:Function,moveDown:Function,moveLeft:Function,moveRight:Function
+    let clearX: Function;
+    let resetPlayerOnScreen: Function;
     // initialization
     for (let i = 0; i < TotalCells; i++) {
         cellData[i] = new Array(TotalCells);
@@ -71,7 +71,6 @@
             }, 7);
         }7  };
 
-    let clearX: Function;
 
     const pauseGame = () => {
         paused = !paused
@@ -181,9 +180,9 @@
     };
 
     initializePath = () => {
-        Board.width = screenWidth;
-        Board.height = screenWidth;
-        width = screenWidth / 25;
+        Board.width = 500;
+        Board.height = 500;
+        width = 500 / 25;
         var c = Board.getContext("2d");
 
         for (let row = 0; row < TotalCells; row++) {
@@ -333,10 +332,12 @@
     };
 
     resetVariables = () => {
-        sec = "60";
+        sec = "45";
         color = "#04fc43";
         playerpos = [0, 0];
-        totalTime = 60
+        resetPlayerOnScreen()
+        clearX()
+        totalTime = 45
         gameStarted = false;
         paused = false
         TotalCells = 25;
@@ -390,7 +391,8 @@
         let player = document.getElementById("img");
         let train = document.getElementById("imgDest");
         let x: number;
-        moveUp=()=>{if (player)
+        moveUp=()=>{
+            if (player)
             if (playerpos[0] > 0) {
                             if (cellData[playerpos[0]][playerpos[1]][0] != 0) {
                                 // console.log("HH");
@@ -495,6 +497,10 @@
             }
         }
 
+        resetPlayerOnScreen = () => {
+            if (player) player.style.transform = 'none';
+        }
+
 
         startTimer = () => {
             if(train)
@@ -523,13 +529,15 @@
                 }
 
                 if (now <= 0) {
-                    clearInterval(x);
+                    clearX()
                     // console.log(destination+"<<>>"+playerpos)
                     let result = checkResult()
                     if (result == true){
                         showResult("WON")
+                        resetVariables()
                     }else{
                         showResult("LOST")
+                        resetVariables()
                     }
                     gameStarted = false
                 }
@@ -538,7 +546,7 @@
     });
 
 
-</script>
+</script>-
 
 <main>
     <div class="textBox">
@@ -772,11 +780,12 @@
             8px 8px #fff,
             15px 15px #494444;
     }
-    @media (max-width: 1000px) {
+    @media (max-width: 900px) {
         main {
             width: 100vw;
             min-width: 0px;
             display: block;
+            overflow-y: hidden;
             background-repeat: repeat-y;
         }
         * {
@@ -799,7 +808,7 @@
         }
         .Main_Container{
             flex-direction: column;
-            align-items: center;
+            align-items: center;    
             display: flex;
             justify-content: center;
         }   
@@ -832,27 +841,9 @@
             font-size: 10px;
         }
         .playarea{
-            width: 90vw;
-            height: 90vw ;
+            transform: scaleX(0.6) scaleY(0.6) translateY(-15%);
             margin: 0;
-        }
-        .playareacontnt{
-            width: 90vw;
-            height: 90vw;
-        }
-
-        #img,#imgDest{
-            min-width: 7px;
-            max-height: 7px;
-        }
-        #imgDest{
-            left: px;
-            top: 10px;
-        }
-
-        #img{
-            left: 25px;
-            top: 10px;
+            padding: 0;
         }
     }
 </style>

@@ -1,11 +1,22 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import GameCard from './Components/GameCard.svelte';
 
     let screenWidth:number
     export let currentGame = 1;
+    export let PopUpObj;
+    export let currentMode:number;
 
     onMount(()=>{
     screenWidth=document.documentElement.clientWidth | 0
+
+      const slider =<HTMLInputElement> document.getElementById("slider_bar")
+      if(slider){
+        slider.oninput = ()=> {
+          if (slider.value)
+            currentMode = Number.parseInt(slider.value);
+        }
+      }
     // console.log(screenWidth)
     })
     /**
@@ -13,9 +24,10 @@
     */
     const setCurrentGame = (val:string) => {
       switch (val) {
-        case "one": currentGame = 1;break;
-        case "two": currentGame = 2;break;
-        case "three": currentGame = 3;break;
+        case "Tic Tac Toe": currentGame = 1;break;
+        case "Maze": currentGame = 2;break;
+        case "Connect 4": currentGame = 3;break;
+        case "Chess": currentGame = 4;break;
                 default: currentGame = 999; // for about page
           break;
       }
@@ -26,111 +38,99 @@
     }
 
     $: current = "one"
-    $: hidden=true
     /**
      * Updates the inner variable "current" which is used to set the game Screen
      * with appropiate game
     */
     const clicked=(str:string)=>{ 
-        if (str !== "home"){
+      console.log(currentMode)
+      if (currentMode != 2){
+        // temporary condition until other modes are made
+        PopUpObj.title = "Message"
+        PopUpObj.message = "Please wait we are trying out best to make this feature online as soon as possible."
+        PopUpObj.isOn = true
+        PopUpObj.inputHints = []
+        setTimeout(()=> {
+          PopUpObj.isOn = false
+        }, 5000)
+        return
+      }
+      if (str !== "home"){
             setCurrentGame(str)
+            handleclick()
         }
         current=str
     }
     
-    function openMenu(event: {preventDefault: () => void;currentTarget: any;}){
-      event.preventDefault()
-      const navBar = document.getElementById("itemHolder_id")
-      const messageBtn = document.getElementById("menuBtn")
-      if (messageBtn?.innerHTML == "Menu"){
-        if (messageBtn){
-          messageBtn.innerHTML = "Cross"
-          messageBtn.style.left = "200px"
-        }
-        if (navBar){
-          navBar.style.left = "0";
-          navBar.style.backgroundColor= "#222323";
-          navBar.style.borderBottom=  '3px #222323 solid';
-          navBar.style.borderRight= '3px #222323 solid';
-        }
-        
-      }else{
-        if (messageBtn){
-          messageBtn.innerHTML = "Menu"
-          messageBtn.style.left = "0"
-        }
-        if (navBar){
-          navBar.style.left = "-110%";
-          navBar.style.backgroundColor= "none";
-          navBar.style.border=  'none';
-        }
-      }
-
-    }
 
     /**
      * This scrolls the screen to the next window where game 
      * is ready to be played
      * @param event
      */
-    function handleclick(event: { preventDefault: () => void; currentTarget: any; }){
-    //   console.log("pp")
-      event.preventDefault()
-      const link= event.currentTarget
-      const href=link?.href
-      if(href){
-        const id= new URL(href).hash.replace('#','')
-        const comp=document.getElementById(id)
-        window.scrollTo({
-          left:comp?.offsetLeft,
-          behavior:'smooth'
-        })
-      }
+    function handleclick(){
+      const comp=document.getElementById("currentGame")
+      window.scrollTo({
+        left:comp?.offsetLeft,
+        behavior:'smooth'
+      })
     }
 
 </script>
 
 <main id="Home">
-    <div id="header">
-        {#if screenWidth>900}
-          <nav>
-            <div class="itemHolder">
-                <!-- <a href="#home" on:click={handleclick} class="{current=="home"?"yellow":"white"}" on:click={()=>{clicked("home")}}>Home</a> -->
-                <a href="#currentGame" on:click={handleclick} class="{current=="one"?"yellow":"white"}" on:click={()=>{clicked("one")}}><h5>TicTacToe</h5></a>
-                <a href="#currentGame" on:click={handleclick} class="{current=="two"?"yellow":"white"}" on:click={()=>{clicked("two")}}><h5>Maze</h5></a>
-                <a href="#currentGame" on:click={handleclick} class="{current=="about"?"yellow":"white"}" on:click={()=>{clicked("about")}}><h5>About</h5></a>
-            </div>
-          </nav>
-          {:else}
-          <nav>
-            <button id="menuBtn" on:click={openMenu}>Menu</button>
-            <div class="itemHolder" id="itemHolder_id" style="display: flex;left:-110%;">
-                <!-- <a href="#home" on:click={handleclick} class="{current=="home"?"yellow":"white"}" on:click={()=>{clicked("home")}}>Home</a> -->
-                <a href="#currentGame" on:click={handleclick} class="{current=="one"?"yellow":"white"}" on:click={()=>{clicked("one")}}>TicTacToe</a>
-                <a href="#currentGame" on:click={handleclick} class="{current=="two"?"yellow":"white"}" on:click={()=>{clicked("two")}}>The Maze</a>
-                <a href="#currentGame" on:click={handleclick} class="{current=="about"?"yellow":"white"}" on:click={()=>{clicked("about")}}>About</a>
-            </div>
-          </nav> 
-        {/if}
-      </div>
-    <div class="Main_Container">
-        <div class="image_holder">
-            <div id="bg_image">
 
+    <div class="flexi fullwidth mobile" >
+        <div class="Main_Container">
+          <div class="image_holder">
+              <div id="bg_image">
+
+              </div>
+          </div>
+          <div class="textBox">
+              <h1>
+                  <span class="heading fonter">Kridamandal</span><br>
+              </h1>
+              <center>
+              <span class="subHeading fonter">
+                  ॐ भूर्भुवः स्वः
+                  तत्सवितुर्वरेण्यं
+                  भर्गो देवस्यः धीमहि
+                  धियो यो नः प्रचोदयात्
+              </span>
+              </center>   
+          </div>
+      </div>
+        <div class="Games_Container">
+          <div class="sliderHolder">
+            <div class="slider">
+              <p>AI</p>
+              <p>Offline</p>
+              <p>Multi</p>
             </div>
-        </div>
-        <div class="textBox">
-            <h1>
-                <span class="heading fonter">Kridamandal</span><br>
-            </h1>
-            <center>
-            <span class="subHeading fonter">
-                ॐ भूर्भुवः स्वः
-                तत्सवितुर्वरेण्यं
-                भर्गो देवस्यः धीमहि
-                धियो यो नः प्रचोदयात्
-            </span>
-            </center>   
+            <input type="range" min="1" max="3" value={currentMode} id="slider_bar"/>
+          </div>
+          <div class="small_container">
+            <GameCard name={"Tic Tac Toe"} color="#FFD600" onClick={clicked} />
+            <GameCard name={"Maze"} color="#D50000" onClick={clicked}/>
+            <GameCard name={"Connect 4"} color="#303F9F" onClick={clicked}/>
+            <GameCard name={"Chess"} color="#8E24AA" onClick={clicked}/>
+            <GameCard name={"More Games Comming Soon"} color="#C51162" onClick={clicked}/>
+          </div>
+          <div class="fullwidth infoDiv">
+            {#if currentMode == 1}
+              <p>Coming Soon</p>
+            {:else if currentMode == 2}
+              <p>Play all the games offline with your friends in the same device</p>
+            {:else}
+              <p>Comming Soon</p>
+              <div class="multi-button">
+                <button>Room</button>
+                <button  style="--color:red"></button>
+              </div>
+            {/if}
+          </div>
+          
         </div>
     </div>
 </main>
@@ -144,6 +144,19 @@
         background-attachment: fixed;
         background-repeat: repeat-x;
     }
+    .infoDiv{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .infoDiv p{
+      text-align: center;
+      text-overflow: ellipsis;
+      text-wrap: wrap;
+      padding: 0 20%;
+    }
     #bg_image{
         
         min-height: 100%;
@@ -153,18 +166,78 @@
         background-image: url('/src/assets/Shivji_img.jpg');
         background-size: contain;
         background-repeat: no-repeat;
-        background-position: -30px;
+        flex-direction: column;
+        background-position: center;
         min-width: 320px;
         min-height: 326px;
-        min-height: 100%;
     }
     .Main_Container{
-        width: 100%;
-        min-width: 100%;
+      min-width: 50%;
+      min-height: 100%;
         align-items: center;
         display: flex;
+        flex-direction: column;
         justify-content: center;
     }
+
+    .multi-button button:nth-child(2){
+      max-width: 25px;
+      max-height: 25px;
+      background-color: var(--color);
+      margin: 0 20px;
+    }
+    
+    .multi-button{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .Games_Container{
+        min-width: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .small_container{
+      display: grid;
+      grid-row: auto;
+      columns: 2;
+      grid-template-columns: auto auto auto;
+    }
+
+    .sliderHolder{
+      width: 50%;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .sliderHolder input{
+      width: 70%;
+      border-radius: 20px;
+    }
+
+    .slider{
+      width: 100%;
+      display: grid;
+      grid-auto-columns: minmax(0,1fr);
+      grid-auto-flow: column;
+    }
+    .slider p{
+      text-align: center;
+      margin: 0;
+    }
+
+    .sliderHolder input[type='range']::-webkit-slider-runnable-track{
+      background-color: #494444;
+      border-radius: 10px;
+    }
+
+
     .textBox{
         display: inline-block;
         align-self: center;
@@ -176,49 +249,49 @@
         text-overflow: ellipsis;
         word-wrap: break-word;
     }
+
+    
     .heading{
-        font-size: 100px;
+        font-size: 70px;
         align-self: center;
+        
+        display: flex;
+        justify-content: center;
         -webkit-text-fill-color: transparent;   
         text-shadow: 8px 8px #fff, 15px 15px #494444;
     }
 
-    #header{
-        position: absolute;
-        height: fit-content;
-    }
-    nav{
-      display: flex;
-      margin-top: 0.1em;
+    .textBox h1{
+        height: 100px;
+        margin: 3px 0;
     }
 
     @media (max-width:900px){
-      main {
-        display: flex;
-        width: 100vw;
+      .Main_Container{
+        min-height: 0;
+        margin-bottom: 20px;
       }
-      #menuBtn{
-        height: 40px;
-        width: 100px;
+      .mobile{
+        flex-direction: column;
       }
 
       #bg_image{
         
         min-height: none;
         max-height: 50%;
-        min-width: 100%;
+        max-width: 200px;
       }
       .image_holder{
-        min-height: 326px;
+        height: 20%; 
+        min-height: 200px;
+        min-width: 200px; 
         background-position: 30px;
         max-width: 350px;
-      }
-      .itemHolder{
-        flex-direction: column;
       }
 
       .textBox h1{
         text-align: center;
+        max-height: 70px;
       }
 
       .heading{
@@ -228,74 +301,11 @@
       .Main_Container{
         flex-direction: column;
         min-width: 100vw;
-        margin-top: 50px;
-      }
-      nav{
-        flex-direction: column;
-        background-color: transparent;
-        border: none;
+        max-height: 50vh;
+        margin: 5px 0;
       }
     }
 
     
 </style>
 
-
-<!-- 
-
-@media(max-width:1000px){
-  main{
-  width: 100vw;
-  min-width: 0px;
-  display: block;
-  /* background-image: url('/src/assets/shivji_mobile.jpg');
-  background-repeat: repeat-y; */
-  display: flex;
-  background-position: 50%;
-  justify-content: space-between;
-  flex-direction: column;
-}
-.Main_Container{
-  width: 100%;
-  margin-bottom: 10%;
-  align-self: baseline;
-}
-.heading{
-  display: flex;
-  justify-content: center;
-  font-size: 50px;
-}
-.textBox{
-  margin-top: 50px;
-}
-*{
-  font-size: medium;
-}
-}
-
-@media(max-width:1000px){
-main{
-display: block;
-height: auto;
-transition: all 0.5s;
-width: 100vw;
-max-height: 400vh;
-}
-.itemHolder{    
-margin-top: 2em;
-position: relative;
-height: 100vh;
-background: transparent;
-flex-direction: column;
-}
-.itemHolder::before{
-background-color: black;
-position: absolute;
-content: '';
-z-index: -1;
-opacity: 0.4;
-}
-.itemHolder a{
-padding: 2em;
-}
-} -->
