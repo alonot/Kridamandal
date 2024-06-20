@@ -1,10 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
-    import { GAMEMODE } from "./Helpers/PopUp";
+    import PopUp, { GAMEMODE } from "./Helpers/PopUp";
     import { checkWinner, getAIMove } from "./Helpers/TicTacToeHelpers";
     
     export let gameMode:number;
+    export let displayPopUp:Function;
 
     let board:HTMLDivElement
     // initialization
@@ -115,7 +116,7 @@
 
 
     function moveAi(){
-        const AIMove = getAIMove(boardvalues,2);
+        const AIMove = getAIMove(boardvalues,2,filled_blocks);
         updateBoard(AIMove);
         
     }
@@ -124,6 +125,14 @@
      * Starts the game
      */
     const play=() => {
+        if (gameMode == GAMEMODE.MULTIPLAYER){
+            displayPopUp(
+                "Message",
+                "This mode is not available to play at this moment.Sorry for the inconvenience",
+                0
+            )
+            return
+        }
         reset(false)
         player1=0
         player2=0

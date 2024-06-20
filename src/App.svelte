@@ -34,18 +34,43 @@
     }
 
     const backBtnPressed = () => {
-      const element=document.getElementById("home")
+      const element=document.getElementById("boss_section")
+      const elementGame=document.getElementById("currentGame")
       if (screenWidth >900){
-        window.scrollTo({
-          left:element?.offsetLeft,
-          behavior:'smooth'
-        })
+        // window.scrollTo({
+        //   left:element?.offsetLeft,
+        //   behavior:'smooth'
+        // })
+        if(element != undefined && elementGame != undefined){
+          element.style.transform = "translateX(0)"
+          setTimeout(()=>{
+            elementGame.style.display= "none";
+          },850)
+        }
+
       }else{
         window.scrollTo({
           top:element?.offsetTop,
           behavior:'smooth'
         })
       }
+    }
+
+    /**
+     * Displays a PopUp
+    */
+    const displayPopUp=(title:string,message:string,timeOutTime:number)=>{ 
+        // temporary condition until other modes are made
+        PopUpObj.title = title
+        PopUpObj.message = message
+        PopUpObj.isOn = true
+        PopUpObj.inputHints = []
+        if (timeOutTime != 0){
+          setTimeout(()=> {
+            PopUpObj.isOn = false
+          }, timeOutTime)
+        }
+        return
     }
   
 
@@ -58,28 +83,39 @@
     <PopUpBox bind:PopUpObj= {PopUpObj}/>
   </div>
   {/if}
-  <div id="home" class="page">
-    <Homepage bind:currentGame={currentGame} bind:PopUpObj = {PopUpObj} bind:currentMode={gameMode}></Homepage>
-  </div>
-  <div id="currentGame" class="page">
-    <div id="backBtn">
-      <button on:click={backBtnPressed}>Back</button>
+  <section id="boss_section">
+    <div id="home" class="page">
+      <Homepage bind:currentGame={currentGame} bind:currentMode={gameMode} displayPopUp= {displayPopUp}></Homepage>
     </div>
-    {#if currentGame == 1 }
-      <TicTacToe bind:gameMode={gameMode}></TicTacToe>
-    {:else if currentGame == 2}
-      <TheMaze ></TheMaze>
-    {:else}
-      <About></About>
-    {/if}
-  </div>
+    <div id="currentGame" class="page">
+      <div id="backBtn">
+        <button on:click={backBtnPressed}>Back</button>
+      </div>
+      {#if currentGame == 1 }
+        <TicTacToe bind:gameMode={gameMode} displayPopUp= {displayPopUp}></TicTacToe>
+      {:else if currentGame == 2}
+        <TheMaze ></TheMaze>
+      {:else}
+        <About></About>
+      {/if}
+    </div>
+  </section>
 </main>
 
 <style>
+  #currentGame{
+    display: none;
+  }
+  section{
+    width: 100%;
+    display: flex;
+    transition: all 0.8s ease-in-out;
+  }
   main{
     max-height: 100vh;
     height: 100vh;
     display: flex;
+    overflow: hidden;
   }
   .page{
     height: 100vh;
@@ -102,6 +138,9 @@
     transition: all 0.5s ease;
   }
   @media(max-width:900px){
+    section{
+      display: block;
+    }
     main{
       display: block;
       height: auto;

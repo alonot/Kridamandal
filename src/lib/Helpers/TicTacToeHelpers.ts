@@ -96,11 +96,17 @@ function scoreFunc(board:Array<string>):number{
 }
 
 
-export function getAIMove(board: Array<string>,aiplayer:number){
+export function getAIMove(board: Array<string>,aiplayer:number,filledBlocks:number){
 
-    const solver = new MinMax(checkWinner,scoreFunc,getActions,updateBoard,5,aiplayer);
+    const solver = new MinMax(checkWinner,scoreFunc,getActions,updateBoard,5,aiplayer,1);
+
+    if (filledBlocks <= 2){
+        let equalActions = getActions(board)
+        return equalActions[((Math.random() * 100) | 0) % equalActions.length]
+    }
 
     let max_val  = solver.maxVal(board,1,-999999,99999);
+
     return max_val[1];
 
 }

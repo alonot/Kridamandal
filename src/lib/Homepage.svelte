@@ -1,11 +1,20 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import GameCard from './Components/GameCard.svelte';
+    import { GAMEMODE } from './Helpers/PopUp';
 
     let screenWidth:number
     export let currentGame = 1;
-    export let PopUpObj;
     export let currentMode:number;
+    export let displayPopUp;
+
+    const Allowed :{[key:string] : Array<number>}= {
+      "Tic Tac Toe": [GAMEMODE.AI,GAMEMODE.OFFLINE],
+      "Maze": [GAMEMODE.OFFLINE],
+      "Connect 4":[],
+      "Chess":[],
+    }
+
 
     onMount(()=>{
     screenWidth=document.documentElement.clientWidth | 0
@@ -43,18 +52,17 @@
      * with appropiate game
     */
     const clicked=(str:string)=>{ 
-      console.log(currentMode)
-      if (currentMode != 2){
+
+      if ( str != "More Games Comming Soon" && ! (currentMode in Allowed[str]) ){
         // temporary condition until other modes are made
-        PopUpObj.title = "Message"
-        PopUpObj.message = "Please wait we are trying out best to make this feature online as soon as possible."
-        PopUpObj.isOn = true
-        PopUpObj.inputHints = []
-        setTimeout(()=> {
-          PopUpObj.isOn = false
-        }, 5000)
-        return
+        displayPopUp(
+          "Message",
+          "Please wait we are trying out best to make this feature online as soon as possible.",
+          5000
+        )
+        return;
       }
+      console.log(currentMode)
       if (str !== "home"){
             setCurrentGame(str)
             handleclick()
@@ -69,11 +77,17 @@
      * @param event
      */
     function handleclick(){
-      const comp=document.getElementById("currentGame")
-      window.scrollTo({
-        left:comp?.offsetLeft,
-        behavior:'smooth'
-      })
+      const element=document.getElementById("boss_section")
+      const elementGame=document.getElementById("currentGame")
+      // window.scrollTo({
+      //   left:comp?.offsetLeft,
+      //   behavior:'smooth'
+      // })
+      if(element != undefined && elementGame != undefined){
+        
+        elementGame.style.display= "flex";
+          element.style.transform = "translateX(-100vw)"
+      }
     }
 
 </script>
