@@ -10,6 +10,9 @@ class PopUp{
         this.message = message
         this.isOn = isOn
         this.inputHints = inputHints
+        this.interval = null;
+        this.totalTime = 0
+        this.answers =[]
     }
 }
 

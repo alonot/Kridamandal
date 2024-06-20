@@ -9,12 +9,15 @@
 
     $: currentGame = 1
     $: gameMode = GAMEMODE.OFFLINE;
-    $: PopUpObj = new PopUp("","",false,[]) 
+    $: PopUpObj = new PopUp("Message","Hello from everybody .",true,["How are you","Where were you"]) 
 
     let screenWidth:number
-
+  let startProgress:Function;
     onMount(()=>{
       screenWidth=document.documentElement.clientWidth | 0
+      startProgress = (totalTime:number) => {
+        
+    }
     })
 
     let ids = ["home","currentGame"]
@@ -65,13 +68,15 @@
         PopUpObj.message = message
         PopUpObj.isOn = true
         PopUpObj.inputHints = []
+        PopUpObj.totalTime = timeOutTime;
         if (timeOutTime != 0){
-          setTimeout(()=> {
+          PopUpObj.interval = setTimeout(()=> {
             PopUpObj.isOn = false
           }, timeOutTime)
         }
         return
     }
+
   
 
 </script>
