@@ -5,7 +5,7 @@ import { MinMax } from "./MinMax";
 * cell of a 2d matrix. Assumes that all string are of same length
 * @param matrix
 */
-function transposeStringMatrix(matrix:Array<string>){
+export function transposeStringMatrix(matrix:Array<string>){
    let new_matrix: string[] = [];
    matrix.forEach((row,ind) => {
        if (ind == 0){
@@ -65,15 +65,19 @@ function getActions(board:Array<string>){
     return actions;
 }
 
-function updateBoard(board:Array<string>, action:number,player:string){
-    let new_board = structuredClone(board);
+function updateBoard(board:Array<string>, action:number,player:string,clone:boolean){
+    let new_board
+    if (clone)
+        new_board = structuredClone(board);
+    else 
+        new_board = board
     let currentpos=[(action/3) | 0,action%3]    
     new_board[currentpos[0]] = new_board[currentpos[0]].substring(0,currentpos[1]) +  
             player + new_board[currentpos[0]].substring(currentpos[1]+1)
     return new_board;
 }
 
-function scoreFunc(board:Array<string>):number{
+function scoreFunc(board:Array<string>,player:string):number{
     let diagonal = "";
     let oppositeDiagonal = "";
     // creating the string to be checked
@@ -95,17 +99,18 @@ function scoreFunc(board:Array<string>):number{
     + diagonal.split("2").length + oppositeDiagonal.split("2").length - 2;
 }
 
+const solver = new MinMax(checkWinner,scoreFunc,getActions,updateBoard,5,2,1);
 
 export function getAIMove(board: Array<string>,aiplayer:number,filledBlocks:number){
 
-    const solver = new MinMax(checkWinner,scoreFunc,getActions,updateBoard,5,aiplayer,1);
+    solver.aiPlayer = aiplayer
 
     if (filledBlocks <= 2){
         let equalActions = getActions(board)
         return equalActions[((Math.random() * 100) | 0) % equalActions.length]
     }
 
-    let max_val  = solver.maxVal(board,1,-999999,99999);
+    let max_val  = solver.maxVal(structuredClone(board),1,-999999,99999);
 
     return max_val[1];
 

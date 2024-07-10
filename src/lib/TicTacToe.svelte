@@ -1,8 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
-    import PopUp, { GAMEMODE } from "./Helpers/PopUp";
     import { checkWinner, getAIMove } from "./Helpers/TicTacToeHelpers";
+    import { GAMEMODE } from "./Helpers/util";
     
     export let gameMode:number;
     export let displayPopUp:Function;
@@ -25,14 +25,14 @@
         boardvalues=["000","000","000"]
         // Setting the rotation of board on mousemove
         document.onmousemove=(e)=>{
-            if (!isplaying){
+            if (!isplaying && board != null){
                 // board.style.transform=`rotateX(0deg) rotateY(360deg)`
                 //  console.log(e) 
                 const dim=(board.getBoundingClientRect())
                 //  console.log(dim)
-                if (dim.left < e.screenX && dim.right> e.screenX && dim.top < e.screenY && dim.bottom > e.screenY) {
-                    let posX=e.screenX-dim.left;
-                    let posY=e.screenY-dim.top;
+                if (dim.left < e.clientX && dim.right> e.clientX && dim.top < e.clientY && dim.bottom > e.clientY) {
+                    let posX=e.clientX-dim.left;
+                    let posY=e.clientY-dim.top;
                     let percenX=Number(posX/dim.width*60)
                     let percenY=Number(posY/dim.height*60)
                     percenX=(percenX<30)?percenX:percenX-60

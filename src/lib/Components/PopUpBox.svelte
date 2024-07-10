@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import type { PopUp } from "../Helpers/PopUp";
 
-    export let PopUpObj;
+    export let PopUpObj:PopUp;
     let title = PopUpObj.title;
     let content = PopUpObj.message;
     let inputHints = PopUpObj.inputHints;

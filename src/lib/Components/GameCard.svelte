@@ -23,7 +23,7 @@
         justify-content: center;
         align-items: center;
         transition: all 0.5s ease-in-out;
-        z-index: 100;
+        z-index: 9;
         position: relative;
         cursor: pointer;
     }

@@ -1,20 +1,25 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import GameCard from './Components/GameCard.svelte';
-    import { GAMEMODE } from './Helpers/PopUp';
+    import { GAMEMODE } from './Helpers/util';
+    import type { Room } from './Helpers/room';
 
     let screenWidth:number
     export let currentGame = 1;
     export let currentMode:number;
     export let displayPopUp;
+    export let room:Room;
 
     const Allowed :{[key:string] : Array<number>}= {
       "Tic Tac Toe": [GAMEMODE.AI,GAMEMODE.OFFLINE],
-      "Maze": [GAMEMODE.OFFLINE],
-      "Connect 4":[],
+      "Maze": [GAMEMODE.OFFLINE,],
+      "Connect 4":[GAMEMODE.OFFLINE,GAMEMODE.AI],
       "Chess":[],
     }
 
+    function showRoom(){
+      room.show = true;
+    }
 
     onMount(()=>{
     screenWidth=document.documentElement.clientWidth | 0
@@ -52,22 +57,28 @@
      * with appropiate game
     */
     const clicked=(str:string)=>{ 
-
-      if ( str != "More Games Comming Soon" && ! (currentMode in Allowed[str]) ){
+      if ( str != "More Games Comming Soon" && !(Allowed[str].includes(currentMode)) ){
         // temporary condition until other modes are made
         displayPopUp(
           "Message",
-          "Please wait we are trying out best to make this feature online as soon as possible.",
+          "Sorry We do not provide the selected service for this game.",
           5000
         )
         return;
       }
-      console.log(currentMode)
+      // console.log(currentMode)
       if (str !== "home"){
             setCurrentGame(str)
             handleclick()
         }
         current=str
+    }
+
+    function showRoomClicked(){
+      console.log("clck")
+      if (currentMode == GAMEMODE.MULTIPLAYER){
+        showRoom()
+      }
     }
     
 
@@ -86,7 +97,10 @@
       if(element != undefined && elementGame != undefined){
         
         elementGame.style.display= "flex";
+        if (screenWidth > 900)
           element.style.transform = "translateX(-100vw)"
+        else 
+          element.style.transform = "translateY(-100vh)"
       }
     }
 
@@ -128,19 +142,19 @@
             <GameCard name={"Tic Tac Toe"} color="#FFD600" onClick={clicked} />
             <GameCard name={"Maze"} color="#D50000" onClick={clicked}/>
             <GameCard name={"Connect 4"} color="#303F9F" onClick={clicked}/>
-            <GameCard name={"Chess"} color="#8E24AA" onClick={clicked}/>
+            <!-- <GameCard name={"Chess"} color="#8E24AA" onClick={clicked}/> -->
             <GameCard name={"More Games Comming Soon"} color="#C51162" onClick={clicked}/>
           </div>
           <div class="fullwidth infoDiv">
             {#if currentMode == 1}
-              <p>Coming Soon</p>
+              <p>Play against an AI, who is eagerly waiting to defeat its future slaves :) </p>
             {:else if currentMode == 2}
-              <p>Play all the games offline with your friends in the same device</p>
+              <p>Play all the games offline with your friends on the same device</p>
             {:else}
-              <p>Comming Soon</p>
+              <p>Sit back, relax and challeng your friend online.</p>
               <div class="multi-button">
-                <button>Room</button>
-                <button  style="--color:red"></button>
+                <button on:click={showRoomClicked}>Room</button>
+                <button  style="--color:{ room.roomId == 0 ? "red":"green"}"></button>
               </div>
             {/if}
           </div>

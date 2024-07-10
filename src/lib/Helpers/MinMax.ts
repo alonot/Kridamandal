@@ -22,15 +22,18 @@ export class MinMax{
             return [-999 + depth,-1];
         }
         if (depth == this.maxdepth){
-            return [this.scoreFunc(board),-1];
+            return [this.scoreFunc(board,"2"),-1];
         }
         
         let actions :Array<any> = this.getActions(board)
         let max_result = [-99999,-1];
         let equalResults = []
+        // let all = []
         for(let i =0 ; i< actions.length; i++){
             let action = actions[i];
-            let val = this.minVal(this.updateBoard(board,action,"2"),depth + 1,alpha, beta);
+            let val = this.minVal(this.updateBoard(board,action,"2",true),depth + 1,alpha, beta);
+            // console.log("Max:" + val + ", " + action)
+            // all.push([val[0],action])
             if (max_result[0]<val[0]){
                 max_result = [val[0],action];
                 equalResults = [action];
@@ -42,6 +45,8 @@ export class MinMax{
             }
             alpha = Math.max(max_result[0],alpha)
         }
+        // console.log(all)
+        // console.log(board)
         if (max_result[0] == -99999){
             max_result = [0,-1];
         }
@@ -55,7 +60,7 @@ export class MinMax{
             return [999 - depth,-1];
         }
         if (depth == this.maxdepth){
-            return [this.scoreFunc(board),-1];
+            return [this.scoreFunc(board,"2"),-1];
         }
         
         let actions = this.getActions(board)
@@ -63,7 +68,7 @@ export class MinMax{
         let equalResults = []
         for(let i =0 ; i< actions.length; i++){
             let action = actions[i];
-            let val = this.maxVal(this.updateBoard(board,action,"1"),depth + 1,alpha, beta);
+            let val = this.maxVal(this.updateBoard(board,action,"1",true),depth + 1,alpha, beta);
             if (min_result[0] > val [0]){
                 min_result = [val[0],action];
                 equalResults = [action]

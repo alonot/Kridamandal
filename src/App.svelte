@@ -5,11 +5,17 @@
     import About from './lib/About.svelte';
     import { onMount } from 'svelte';
     import PopUpBox from './lib/Components/PopUpBox.svelte';
-    import PopUp, { GAMEMODE } from './lib/Helpers/PopUp';
+    import { GAMEMODE } from './lib/Helpers/util';
 
-    $: currentGame = 1
-    $: gameMode = GAMEMODE.OFFLINE;
-    $: PopUpObj = new PopUp("Message","Hello from everybody .",true,["How are you","Where were you"]) 
+    import Connect4 from './lib/Connect4.svelte';
+    import { PopUp } from './lib/Helpers/PopUp';
+    import { Room } from './lib/Helpers/room';
+    import RoomCard from './lib/Components/RoomCard.svelte';
+
+    let currentGame = 1
+    let gameMode = GAMEMODE.OFFLINE;
+    $: PopUpObj = new PopUp("","",false,[]) 
+    $: room = new Room() // new logic needed that does remove this on reload.
 
     let screenWidth:number
   let startProgress:Function;
@@ -36,6 +42,8 @@
       }
     }
 
+    
+
     const backBtnPressed = () => {
       const element=document.getElementById("boss_section")
       const elementGame=document.getElementById("currentGame")
@@ -52,16 +60,21 @@
         }
 
       }else{
-        window.scrollTo({
-          top:element?.offsetTop,
-          behavior:'smooth'
-        })
+        if(element != undefined && elementGame != undefined){
+          element.style.transform = "translateY(0)"
+          setTimeout(()=>{
+            elementGame.style.display= "none";
+          },850)
+        }
       }
     }
 
     /**
-     * Displays a PopUp
-    */
+     * display a popUp Box
+     * @param title
+     * @param message
+     * @param timeOutTime
+     */
     const displayPopUp=(title:string,message:string,timeOutTime:number)=>{ 
         // temporary condition until other modes are made
         PopUpObj.title = title
@@ -90,7 +103,8 @@
   {/if}
   <section id="boss_section">
     <div id="home" class="page">
-      <Homepage bind:currentGame={currentGame} bind:currentMode={gameMode} displayPopUp= {displayPopUp}></Homepage>
+      <RoomCard bind:room={room} />
+      <Homepage bind:currentGame={currentGame} bind:currentMode={gameMode} displayPopUp= {displayPopUp} bind:room={room}></Homepage>
     </div>
     <div id="currentGame" class="page">
       <div id="backBtn">
@@ -100,6 +114,8 @@
         <TicTacToe bind:gameMode={gameMode} displayPopUp= {displayPopUp}></TicTacToe>
       {:else if currentGame == 2}
         <TheMaze ></TheMaze>
+      {:else if currentGame == 3}
+        <Connect4 bind:gameMode={gameMode} displayPopUp={displayPopUp}/>
       {:else}
         <About></About>
       {/if}
@@ -151,7 +167,7 @@
       height: auto;
       transition: all 0.5s;
       width: 100vw;
-      max-height: 200vh;
+      max-height: 100vh;
     }
   }
 </style>
