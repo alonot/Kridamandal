@@ -9,3 +9,7 @@ export let GAMEMODE = Object.freeze({
 export let COLORS = [
     "#B91C1C","#1D4ED8","#15803D","#B45309","#A21CAF","#BE185D"
 ]
+
+export const DIALOG = 'dialog'
+export const ASK = 'ask'
+export const LOADING = 'loading'

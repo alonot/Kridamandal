@@ -6,6 +6,8 @@
     let title = PopUpObj.title;
     let content = PopUpObj.message;
     let inputHints = PopUpObj.inputHints;
+    let afterDialog = PopUpObj.afterMessage
+    let cancelOn = PopUpObj.cancelOn
     let x:number;
 
     onMount(()=>{
@@ -22,7 +24,12 @@
                 }
                 count += incrementUnit;
                 if (count >= PopUpObj.totalTime){
-                clearInterval(x);
+                    clearInterval(x);
+                    PopUpObj.isOn = false
+                    if (afterDialog){
+                        afterDialog([false]);  // unexpected situation that intervalgot clear because this must not occur in case of askPopUp
+                    }
+                    PopUpObj.clear()
                 }
                 
             },incrementUnit);
@@ -43,27 +50,53 @@
         {#if inputHints.length != 0}
         <div class="inputBox">
             {#each inputHints as inputHint}
-                <input type="text" placeholder={inputHint}/>
+                <input type="text" placeholder={inputHint} required/>
             {/each}
         </div>
         {/if}
         <div class="buttonDiv">
             <button on:click={ () => {
-                PopUpObj.isOn = !PopUpObj.isOn;
-                if (PopUpObj.interval != null){
-                    clearInterval(PopUpObj.interval)
-                    clearInterval(x)
-                }
-                PopUpObj.answers = []
+                const answers  = [] 
+                answers.push(true)
                 if (inputHints.length != 0){
                     const inputs = document.getElementsByTagName("input")
                     for (let input of inputs){
-                        PopUpObj.answers.push(input.value)
+                        if (input.value.length == 0) {
+                            alert("Empty fields not allowed")
+                            return;
+                        }
+                        answers.push(input.value)
                     }
                 }
+                
+                PopUpObj.isOn = false;
+                if (PopUpObj.interval != null){
+                    clearInterval(PopUpObj.interval)
+                    clearInterval(x);
+                }
+                
+                if (afterDialog){
+                    afterDialog(answers);
+                }
+                PopUpObj.clear();
                 // console.log(PopUpObj.answers)
             }} >Ok</button>
+            {#if cancelOn}
+                <button on:click={ () => {
+                    PopUpObj.isOn = !false;
+                    if (PopUpObj.interval != null){
+                        clearInterval(PopUpObj.interval)
+                        clearInterval(x);
+                    }
+                    if (afterDialog){
+                        afterDialog([false]);
+                    }
+                    PopUpObj.clear();
+                    // console.log(PopUpObj.answers)
+                }} >Cancel</button>
+            {/if}
         </div>
+        
     </div>
 
 </div>
@@ -83,12 +116,13 @@
         align-items: center;
         height: auto;
         overflow-x: scroll;
-        overflow-y: scroll;
-        /* padding: 5px;     */
+        overflow-y: scroll;  
     }
 
     .popUpTitleBox{
         width: 100%;
+        margin: 0 30px;
+        padding-bottom: 5px;
         background-color: #EF5350;
         flex: 1;
     }
@@ -104,7 +138,8 @@
     .restBox{
         flex: 12;
         width: 100%;
-        padding: 5px;
+        padding: 10px;
+        margin: 0 30px;
         display: flex;
         flex-direction: column;
         background-color: black;
@@ -144,6 +179,7 @@
         bottom: 0px;
         padding: 5px 0;
         height: 30px;
+        gap: 10px;
     }
 
     .inputBox{

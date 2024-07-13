@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { getContext, onMount } from "svelte";
     import { fade } from "svelte/transition";
     import { checkWinner, getAIMove } from "./Helpers/TicTacToeHelpers";
-    import { GAMEMODE } from "./Helpers/util";
+    import { DIALOG, GAMEMODE } from "./Helpers/util";
     
     export let gameMode:number;
-    export let displayPopUp:Function;
+    const displayPopUp:Function = getContext(DIALOG);
 
     let board:HTMLDivElement
     // initialization

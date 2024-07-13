@@ -5,7 +5,10 @@ export class PopUp{
     inputHints:Array<string>
     interval:number
     totalTime:number
-    answers:Array<any>
+    afterMessage:Function | null  /// first if this is given 
+    // then first asnwer is always true/false, based on whether 'OK' was pressed or 'cancel'
+    // please do not expect answer to the inputs if this first argument is false
+    cancelOn:boolean
     /**
      * @param {string} title
      * @param {string} message
@@ -19,7 +22,20 @@ export class PopUp{
         this.inputHints = inputHints
         this.interval = 0;
         this.totalTime = 0
-        this.answers =[]
+        this.afterMessage = null
+        this.cancelOn = false
+    }
+
+
+    public clear(){
+        this.interval = 0;
+        this.totalTime = 0
+        this.afterMessage = null
+        this.cancelOn = false
+        this.title = ""
+        this.message = ""
+        this.isOn = false
+        this.inputHints = []
     }
 }
 

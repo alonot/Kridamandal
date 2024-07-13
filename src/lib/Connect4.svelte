@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { getContext, onMount } from "svelte";
     import { CheckWinner, getAIMove, isTerminalState, updateBoard,updateLevel } from "./Helpers/Connect4Helper";
-    import { GAMEMODE } from "./Helpers/util";
+    import { DIALOG, GAMEMODE } from "./Helpers/util";
 
     export let gameMode:number;
-    export let displayPopUp:Function;
+    const displayPopUp:Function = getContext(DIALOG);
 
     $: player1Score = 0
     $: player2Score = 0

@@ -1,13 +1,16 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { getContext, onMount } from 'svelte';
     import GameCard from './Components/GameCard.svelte';
-    import { GAMEMODE } from './Helpers/util';
+    import { ASK, DIALOG, GAMEMODE, LOADING } from './Helpers/util';
     import type { Room } from './Helpers/room';
 
     let screenWidth:number
+    let sliderBar:HTMLInputElement
     export let currentGame = 1;
     export let currentMode:number;
-    export let displayPopUp;
+    const displayPopUp:Function = getContext(DIALOG);
+    const loading:Function = getContext(LOADING);
+    const askPopUp:Function = getContext(ASK);
     export let room:Room;
 
     const Allowed :{[key:string] : Array<number>}= {
@@ -21,14 +24,87 @@
       room.show = true;
     }
 
-    onMount(()=>{
-    screenWidth=document.documentElement.clientWidth | 0
+    function onError(){
+      // clear the room
+      sessionStorage.removeItem('room')
+      room.clear();
+      if (sliderBar){
+        sliderBar.value = "2";
+        currentMode = 2;
+      }
+      // show dialog
+      setTimeout(()=>{
+        displayPopUp(
+          "Error",
+          "Unable to connect to the server",
+          3000
+        )
+        loading(false)
+      },100) // giving time to update UI
+    }
 
-      const slider =<HTMLInputElement> document.getElementById("slider_bar")
-      if(slider){
-        slider.oninput = ()=> {
-          if (slider.value)
-            currentMode = Number.parseInt(slider.value);
+    function closeLoading(){
+      loading(false)
+    }
+
+    onMount(()=>{
+      screenWidth=document.documentElement.clientWidth | 0
+
+      if(sliderBar){
+        sliderBar.oninput = (e)=> {
+          if (sliderBar.value){
+            // show loading
+            loading(true)
+            if (currentMode == GAMEMODE.MULTIPLAYER){
+              const clearRoom = (result: any)=>{
+                if (result[0]){
+                  // clear the room
+                  sessionStorage.removeItem('room')
+                  room.clear();
+                }else{
+                  sliderBar.value = "3";
+                  loading(false)
+                  return;
+                }
+                //
+              }
+
+              // add dialog
+              askPopUp(
+                "Error",
+                "Do you want to leave the room?",
+                [],
+                true,
+                clearRoom
+              )
+              
+            }
+            currentMode = Number.parseInt(sliderBar.value);
+            if (currentMode == GAMEMODE.MULTIPLAYER){
+              const gotDetails = (result:any[])=> {
+                if (result[0]){
+                  // create new Room;
+                  room.connectRooms(result[1],result[2],onError,closeLoading)
+                }else{
+                  currentMode = 2;
+                  sliderBar.value = "2";
+                  loading(false)
+                  return
+                }
+              }
+              askPopUp(
+                "Enter Room",
+                "Please Provide us the relevant details",
+                ["NickName","Password"],
+                true,
+                gotDetails
+              )
+              
+            }else{
+              //close loading
+              loading(false)
+            }
+          }
         }
       }
     // console.log(screenWidth)
@@ -75,7 +151,6 @@
     }
 
     function showRoomClicked(){
-      console.log("clck")
       if (currentMode == GAMEMODE.MULTIPLAYER){
         showRoom()
       }
@@ -136,7 +211,7 @@
               <p>Offline</p>
               <p>Multi</p>
             </div>
-            <input type="range" min="1" max="3" value={currentMode} id="slider_bar"/>
+            <input type="range" min="1" max="3" value={currentMode} id="slider_bar" bind:this={sliderBar}/>
           </div>
           <div class="small_container">
             <GameCard name={"Tic Tac Toe"} color="#FFD600" onClick={clicked} />
