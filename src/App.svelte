@@ -3,7 +3,7 @@
     import TicTacToe from './lib/TicTacToe.svelte';
     import TheMaze from './lib/TheMaze.svelte';
     import About from './lib/About.svelte';
-    import { onMount, setContext } from 'svelte';
+    import { onDestroy, onMount, setContext } from 'svelte';
     import PopUpBox from './lib/Components/PopUpBox.svelte';
     import { ASK, DIALOG, GAMEMODE, LOADING } from './lib/Helpers/util';
 
@@ -13,28 +13,142 @@
     import RoomCard from './lib/Components/RoomCard.svelte';
     import Loading from './lib/Components/Loading.svelte';
 
+    //// States for this app //////////
     let currentGame = 1
-    let gameMode = GAMEMODE.OFFLINE;
+    let gameMode:number = GAMEMODE.OFFLINE;
     let loading = false;
+    let message = ""
     $: PopUpObj = new PopUp("","",false,[]) 
-    $: room = new Room() // new logic needed that does remove this on reload.
+    $: room = new Room(handleMessage)
+    // Room will be reinitialized on reload.
+    ///////////////////////////////////
+
+    onDestroy(()=>{
+      room.clear()
+    })
+
+    function handleMessage(data:{}){
+      console.log(data)
+      // @ts-ignore
+      const type = data.type
+      if (type == undefined || null){
+        return
+      }
+      switch(type){
+        case "error":
+          displayPopUp(
+            "Error",
+             // @ts-ignore
+            data.message,
+            3000,
+            undefined
+          )
+          break;
+
+        case "create_room":
+          const pass = room.password
+          const websocket = room.websocket
+          room.resetRoomID()
+          // @ts-ignore
+          const data_room = data.data
+          room.password = pass
+          room.websocket = websocket
+          room.room_id = data_room.room_id
+          room.players = data_room.players
+          for (var i= 0; i< room.players.length; i++){
+            const p = room.players[i]
+            if (p.name == data_room.device_player){
+
+              room.device_player = p;
+              break
+            }
+          }
+          console.log(room.device_player)
+          
+          break;
+
+        case "add_player":
+          // @ts-ignore
+          const player = data.data
+          room.players.push(player)
+          room.players = room.players
+          break;
+
+        case "remove_player":
+          // @ts-ignore
+          const p_data = data.data
+          const player_name = p_data.name
+          const admin_name = p_data.admin
+          room.players = room.players.filter(player => {
+            if (admin_name == player.name){
+              player.admin = true
+            }
+            if (player.name != player_name){
+              return player
+            }
+          });
+          if (room.players.length == 0){
+            room.clear()
+          }
+          room = room
+          break;
+            
+        case "make_watcher":
+          // @ts-ignore
+          let name = data.data
+          room.players.forEach(player => {
+            if (player.name == name){
+              player.role = "Watcher"
+            }
+          });  
+          break;
+
+        case "make_player":
+          // @ts-ignore
+          name = data.data
+          room.players.forEach(player => {
+            if (player.name == name){
+              player.role = "Player"
+            }
+          });
+          break;
+
+          default: 
+          break;
+
+      }
+      setLoading(false,"")
+    }
+
 
     let screenWidth:number
     let startProgress:Function;
     onMount(()=>{
       screenWidth=document.documentElement.clientWidth | 0
-      // reading room_key if present in sessionStorage
-      const roomInfo = sessionStorage.getItem('room')
-      if (roomInfo != null){
-        const info = JSON.parse(roomInfo);
-        room.roomId = info.room_id
-        room.password = info.password
+      window.onbeforeunload = function(e){
+        e.preventDefault()
+        const return_str = "Are you sure? You will be logged out of the room."
+        e.returnValue = return_str
+        return return_str
       }
-
-      // const websocket = new WebSocket("ws://localhost:8001/");
-      // websocket.onopen = (event) => {
-      //   const socket = event.target as WebSocket
-      //   socket!.send(JSON.stringify({game:1,move:"Info specific to game"}));}
+      window.addEventListener('unload', function() {
+        console.log("ll")
+        if (room.websocket) {
+            room.websocket.close();
+        }
+      });
+      setInterval(()=>{
+        if ((gameMode == GAMEMODE.MULTIPLAYER) && (room.websocket == null || room.websocket.readyState != room.websocket.OPEN) ){
+          room.clear()
+          displayPopUp(
+            "Error",
+            "Disconnected",
+            3000,
+            undefined
+          )
+        }
+        
+      },60000)  // checks ever 1 minutes if connection is still on or not..
     })
 
     let ids = ["home","currentGame"]
@@ -86,18 +200,18 @@
      * @param message
      * @param timeOutTime
      */
-    const displayPopUp=(title:string,message:string,timeOutTime:number)=>{ 
-        // temporary condition until other modes are made
+    const displayPopUp=(title:string,message:string,timeOutTime:number,afterMessage:Function | undefined)=>{ 
+        
+        PopUpObj.clear()
         PopUpObj.title = title
         PopUpObj.message = message
         PopUpObj.isOn = true
         PopUpObj.inputHints = []
         PopUpObj.totalTime = timeOutTime;
-        PopUpObj.afterMessage = null
-        if (timeOutTime != 0){
-          PopUpObj.interval = setTimeout(()=> {
-            PopUpObj.isOn = false
-          }, timeOutTime) // extra time for function to return
+        if (afterMessage != undefined)
+          PopUpObj.afterMessage = afterMessage
+        else{
+          PopUpObj.afterMessage = null
         }
         return
     }
@@ -109,7 +223,8 @@
      * @param timeOutTime
      */
      const askPopUp=(title:string,message:string,input:string[],cancelOn:boolean,afterDialog:Function)=>{ 
-        // temporary condition until other modes are made
+        
+        PopUpObj.clear()
         PopUpObj.title = title
         PopUpObj.message = message
         PopUpObj.isOn = true
@@ -121,7 +236,12 @@
     }
 
 
-    function setLoading(val:boolean){
+    function setLoading(val:boolean,msg:undefined | string){
+      if (msg != undefined && val){
+        message = msg
+      }else{
+        message = ""
+      }
       loading = val
     }
     setContext(DIALOG,displayPopUp)
@@ -134,7 +254,7 @@
 
 <main>
   {#if loading}
-    <Loading/>
+    <Loading message={message}/>
   {/if}
   {#if (PopUpObj.isOn)}
   <div class="popUpHolder">
@@ -143,7 +263,7 @@
   {/if}
   <section id="boss_section">
     <div id="home" class="page">
-      <RoomCard bind:room={room} />
+      <RoomCard bind:prop_room={room} />
       <Homepage bind:currentGame={currentGame} bind:currentMode={gameMode} bind:room={room}></Homepage>
     </div>
     <div id="currentGame" class="page">

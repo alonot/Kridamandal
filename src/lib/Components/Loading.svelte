@@ -1,4 +1,5 @@
 <script lang="ts">
+    export let message;
 
 </script>
 
@@ -6,11 +7,18 @@
     <div class="spinner">
 
     </div>
+    <p>{message}</p>
 </main>
 
 <style>
-    *{
+    *{ 
         box-sizing: border-box;
+    }
+    p{
+        text-align: center;
+        color: white;
+        font-size: 12px;
+        max-width: max(150px,30%);
     }
     .flexi{
         display: flex;
@@ -18,9 +26,10 @@
         justify-content: center;
     }
     main {
-        z-index: 10;
+        z-index: 15;
         position: absolute;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: flex-start;
         width: 100vw;

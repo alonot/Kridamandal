@@ -24,45 +24,70 @@
       room.show = true;
     }
 
-    function onError(){
-      // clear the room
-      sessionStorage.removeItem('room')
-      room.clear();
-      if (sliderBar){
-        sliderBar.value = "2";
-        currentMode = 2;
+    async function ensureConnection(str:string){
+      if (room.device_player != null && room.websocket && room.websocket.readyState == room.websocket.OPEN){
+        if (room.device_player.admin){
+          loading(true,"Waiting for the other player to be ready....")
+          // send request to other player for this particular game
+          // NOTE: only admin can send this message
+          // if request is successfull->
+          // if (str !== "home"){
+            //       setCurrentGame(str)
+            //       handleclick()
+            //   }
+            //   current=str
+            // else ->
+            // displayPopUp()
+            //do nothing
+        }else{
+          displayPopUp(
+            "Alert",
+            "You Cannot start a game. Please ask admin to start the game.",
+            3000
+          )
+        }
+      }else{
+        displayPopUp(
+          "Alert",
+          "Please create/join a room first",
+          3000,
+          ()=>{showRoom()}
+        )
       }
-      // show dialog
+    }
+
+    function revertSlider(){
+      if (sliderBar){
+        sliderBar.value = "2"
+      }
+      currentMode = 2
       setTimeout(()=>{
         displayPopUp(
           "Error",
           "Unable to connect to the server",
-          3000
+          3000,
+          ()=>{loading(false,"")}
         )
-        loading(false)
-      },100) // giving time to update UI
+      },100)
     }
 
-    function closeLoading(){
-      loading(false)
-    }
 
     onMount(()=>{
       screenWidth=document.documentElement.clientWidth | 0
 
       if(sliderBar){
-        sliderBar.oninput = (e)=> {
+        sliderBar.oninput = async (e)=> {
           if (sliderBar.value){
             // show loading
-            loading(true)
+            loading(true,"")
             if (currentMode == GAMEMODE.MULTIPLAYER){
               const clearRoom = (result: any)=>{
                 if (result[0]){
                   // clear the room
-                  sessionStorage.removeItem('room')
                   room.clear();
                 }else{
                   sliderBar.value = "3";
+                  currentMode = GAMEMODE.MULTIPLAYER
                   loading(false)
                   return;
                 }
@@ -81,25 +106,13 @@
             }
             currentMode = Number.parseInt(sliderBar.value);
             if (currentMode == GAMEMODE.MULTIPLAYER){
-              const gotDetails = (result:any[])=> {
-                if (result[0]){
-                  // create new Room;
-                  room.connectRooms(result[1],result[2],onError,closeLoading)
-                }else{
-                  currentMode = 2;
-                  sliderBar.value = "2";
-                  loading(false)
-                  return
-                }
+              room.clear()
+              loading(true,"Connecting to the server")
+              if (await room.connectRooms()){
+                loading(false)
+              }else{
+                revertSlider()
               }
-              askPopUp(
-                "Enter Room",
-                "Please Provide us the relevant details",
-                ["NickName","Password"],
-                true,
-                gotDetails
-              )
-              
             }else{
               //close loading
               loading(false)
@@ -132,7 +145,7 @@
      * Updates the inner variable "current" which is used to set the game Screen
      * with appropiate game
     */
-    const clicked=(str:string)=>{ 
+    const clicked=async (str:string)=>{ 
       if ( str != "More Games Comming Soon" && !(Allowed[str].includes(currentMode)) ){
         // temporary condition until other modes are made
         displayPopUp(
@@ -142,12 +155,15 @@
         )
         return;
       }
-      // console.log(currentMode)
-      if (str !== "home"){
-            setCurrentGame(str)
-            handleclick()
-        }
-        current=str
+      if (currentMode == GAMEMODE.MULTIPLAYER){
+        await ensureConnection(str)
+      }else{
+        if (str !== "home"){
+              setCurrentGame(str)
+              handleclick()
+          }
+          current=str
+      }
     }
 
     function showRoomClicked(){
@@ -229,7 +245,7 @@
               <p>Sit back, relax and challeng your friend online.</p>
               <div class="multi-button">
                 <button on:click={showRoomClicked}>Room</button>
-                <button  style="--color:{ room.roomId == 0 ? "red":"green"}"></button>
+                <button  style="--color:{ room.room_id == 0 ? "red":"green"}"></button>
               </div>
             {/if}
           </div>

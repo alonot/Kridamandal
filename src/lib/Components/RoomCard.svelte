@@ -4,33 +4,94 @@
     import eyeOpen from "../../assets/eye-open.svg"
     import cross from "../../assets/cross.svg"
     import Player from "./Player.svelte";
-    import { COLORS } from "../Helpers/util";
-    import { onMount } from "svelte";
+    import { ASK, COLORS, DIALOG, LOADING, shuffle } from "../Helpers/util";
+    import { getContext, onMount } from "svelte";
 
-    export let room: Room;
+    export let prop_room: Room;
+    $: room = prop_room;
     let roomarea:HTMLElement;
     let mainarea:HTMLElement;
+    const dialogPopUp:Function = getContext(DIALOG)
+    const askPopUp:Function = getContext(ASK)
+    const loading:Function = getContext(LOADING)
     onMount(()=>{
-        const bounds = roomarea.getBoundingClientRect()
         mainarea.onclick=(e)=>{
-            if (e.clientX > bounds.right || e.clientX < bounds.left || e.clientY > bounds.bottom && e.clientY < bounds.top  ){
+            const bounds = roomarea.getBoundingClientRect()
+            if (e.clientX > bounds.right || e.clientX < bounds.left || e.clientY > bounds.bottom || e.clientY < bounds.top  ){
                 room.show = false;
             }
         }
     })
 
+    function joinRoom(){
+        // ask the nickname and password
+        const afterDialog = (result:any[]) => {
+            if (result[0]){
+                const room_id = Number(result[1])
+                if (Number.isNaN(room_id)) {
+                    alert("Please provide a numeric room_id")
+                    return
+                }
+                // send to join the room
+                loading(true,"joining room")
+                if (!room.join(room_id,result[2],result[3])){
+                    loading(false)
+                    console.log("failde")
+                    alert("Failed. Please retry")
+                    room.connectRooms()
+                }
+            }
+        }
+        askPopUp(
+            "Enter Room",
+            "Please provide the details",
+            ["roomID","Password","Nickname"],
+            true,
+            afterDialog
+        )
+    }
 
-    let availableColors = structuredClone(COLORS)
-    const colors:string[] = [];
-    let len = 6;
-    room.players.forEach((player)=>{
-        const colorInd = (Math.random() * 100 | 0) % len
-        colors.push(availableColors[colorInd])
-        availableColors = availableColors.filter((val,ind)=>{
-            if (ind != colorInd) return val
-        });
-        len--
-    })
+    function createRoom(){
+        // ask the nickname and password
+        const afterDialog =  (result:any[]) => {
+            if (result[0]){
+                loading(true,"creating room")
+                if (!(room.create(result[1],result[2]))){
+                    loading(false)
+                    room.clear()
+                    alert("Failed. Please retry")
+                    room.connectRooms()
+                }
+            }
+        }
+        askPopUp(
+            "Enter Room",
+            "Please provide the details",
+            ["Password","Nickname"],
+            true,
+            afterDialog
+        )
+    }
+
+    function leaveRoom(){
+        const afterDialog = function(result:any[]){
+            if (result[0]){
+                room.show = false
+                room.clear()
+            }
+        }
+        askPopUp(
+            "Alert",
+            "Do you want to leave the room.",
+            [],
+            true,
+            afterDialog
+        )
+
+    }
+
+    shuffle(COLORS)
+    
 
     let showPassword = false;
 
@@ -40,17 +101,17 @@
     <section bind:this={roomarea} class="roomarea">
         <div class="heading flexi">
             <h3>MULTIPLAYER</h3>
-            <img alt="close" src={cross} on:click={()=>{room.show = false}}/>
+            <img alt="close" title="Exit Room" src={cross} on:click={leaveRoom}/>
         </div>
         <div class="subheading flexi">
-            {#if room.roomId == 0}
+            {#if room.room_id == 0}
             <h5>RoomID: Not joined</h5>
             <h5>Password: xxxxx</h5>
             {:else}
             <div class="gridy">
 
                 <h5>RoomID:</h5>
-                <h5>{room.roomId}</h5>
+                <h5>{room.room_id}</h5>
                 <h5>Password</h5>
 
                 <h5 class="flexi"><input type={showPassword ? "text" : "password"} disabled value={room.password} />
@@ -71,25 +132,27 @@
         </div>
         <div class="rest">
             <div class="roominfo flexi">
-                {#if room.roomId == 0}
+                {#if room.room_id == 0}
                 <p> Please create or join a room first</p>
                 {:else}
                 <div class="persons">
                     {#each room.players as player,ind }
-                        <Player player={player} color={colors[ind]}/>
+                        <Player player={player} color={COLORS[ind]} you={room.device_player?.name == player.name}/>
                     {/each}
                 </div>
                 {/if}
             </div>
+            {#if room.room_id == 0}
             <div class="joinorcreate flexi">
                 <div class="buttonDiv">
-                    <button>JOIN</button>
+                    <button on:click={joinRoom}>JOIN</button>
                 </div>
                 <div class="or">OR</div>
                 <div class="buttonDiv">
-                    <button>CREATE</button>
+                    <button on:click={createRoom}>CREATE</button>
                 </div>
             </div>
+            {/if}
         </div>
     </section>
 </main>
@@ -113,9 +176,8 @@
         color: white;
         height: 100vh;
         overflow-x: hidden;
-        background: rgba(89, 83, 83, 0.549);
         overflow-y: scroll;
-        transition: all 0.6s ease-in-out;
+        transition: all 0.5s ease-in-out;
     }
     h3,h5{
         margin: 0;
@@ -128,7 +190,10 @@
     .roomarea{
         background-color: black;
         padding: 10px;
-        width: min(50%,410px);
+        border-radius: 5px;
+        box-shadow: 0 20px 40px #212121,0 -10px 60px #212121;
+        width: min(50%,500px);
+        border: 0.5px solid #212121;
         position: relative;
     }
     .heading{
@@ -143,6 +208,7 @@
         cursor: pointer;
     }
     .subheading{
+        flex-direction: column;
         border-bottom: #39cab760 0.1px solid;
     }
     .rest{

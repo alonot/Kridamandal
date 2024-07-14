@@ -1,70 +1,104 @@
 export type Player = {
     name:string,
-    joinedAt:string
+    joined_at:string,
+    admin:boolean,
+    role:string,
+    won:number,
+    lost:number
 };
 
 export class Room{
-    number_of_players:number;
-    players: Player[];
-    roomId:number;
-    password:string;
-    show:boolean;
-    websocket:WebSocket | null;
+    players!: Player[];
+    device_player!: Player | null;
+    room_id!:number;
+    password!:string;
+    show!:boolean;
+    websocket!:WebSocket | null;
+    handler:Function
 
-    constructor(){
-        this.number_of_players = 0
-        this.players = [{
-            "name":"Alonot",
-            "joinedAt":"23/12/2024:23:15 IST"
-        },{
-            "name":"Alonot",
-            "joinedAt":"23/12/2024:23:15 IST"
-        }]
-        this.roomId = 123;
-        this.password = "asdakjs"
-        this.show = false;
-        this.websocket = null;
+    constructor(handler:Function){
+        console.log("Callwd")
+        this.clear()
+        this.handler = handler
+    }
+
+    public resetRoomID(){
+        this.players = []
+        this.device_player = null
+        this.room_id = 0; 
     }
 
     public clear(){
-        this.number_of_players = 0
+        console.log("Clearing")
         this.players = []
-        this.roomId = 0;
+        this.device_player = null
+        this.room_id = 0;
         this.password = ""
         this.show = false;
-        if (this.websocket != null)
+        if (this.websocket != null){
             this.websocket.close()
+        }
+        this.websocket = null
     }
 
     private generateRoomId() {
-        this.roomId = Math.floor(100000 + Math.random() * 900000); // generates 6-digit number
+        this.room_id = Math.floor(100000 + Math.random() * 900000); // generates 6-digit number
+        return this.room_id
     }
 
     /**
      * Establishes a connection online
      */
-    public connectRooms(nickName:string,password:string,onErr:Function,onOpen:Function){
-        this.generateRoomId()
-        this.password = password
+    public async connectRooms(){
         this.websocket = new WebSocket('ws://localhost:8001/')
-        this.players.push({
-            name:nickName,
-            joinedAt:Date.now().toString()
-        })
-        this.websocket.onerror = (e) => {
-            onErr()
-        }
-        this.websocket.onopen = (e)=>{
-            const socket = e.target as WebSocket
-            // registering ID
-            const data = {
-                type:"register",
-                room_id: this.roomId,
-                password: this.password
+        
+        return new Promise<boolean>((resolve, reject) => {
+            if (this.websocket){
+                const handler = this.handler
+                this.websocket.onerror = (e) => {
+                    resolve(false)
+                }
+                this.websocket.onopen = (e)=>{
+                    resolve(true)
+                }
+                this.websocket.onmessage = function({data}){
+                    handler(JSON.parse(data))
+                }
             }
-            socket.send(JSON.stringify(data))
-            onOpen()
+        })
+    }
+
+    public leaveRoom(){
+        this.clear()
+    }
+
+
+    public sendMessage(data:{}){
+        if (this.websocket == null || this.websocket.readyState != this.websocket.OPEN){
+            return false;
         }
+        this.websocket.send(JSON.stringify(data))
+        return true;
+    }
+
+    public create(password:string, name: string){
+        this.password = password
+        return this.sendMessage({
+            "type":"create",
+            "room_id":this.generateRoomId(),
+            "password":password,
+            "name":name
+        })
+    }
+
+    public join(room_id:number, password:string, name: string){
+        this.password = password
+        return this.sendMessage({
+            "type":"add_player",
+            "room_id":room_id,
+            "password":password,
+            "name":name
+        })
     }
 
 }

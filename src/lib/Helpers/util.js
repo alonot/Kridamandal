@@ -13,3 +13,19 @@ export let COLORS = [
 export const DIALOG = 'dialog'
 export const ASK = 'ask'
 export const LOADING = 'loading'
+
+
+/**
+ * @param {any} array
+ */
+export function shuffle(array){ // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+    let currentInd = array.length
+
+    while( currentInd != 0){
+
+        let randInd = Math.floor(Math.random() * currentInd)
+        currentInd --;
+
+        [array[currentInd], array[randInd]] = [array[randInd] , array[currentInd]]
+    }
+}
