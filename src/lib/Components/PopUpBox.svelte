@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import type { PopUp } from "../Helpers/PopUp";
+    import type { PopUp } from "$lib/Helpers/PopUp";
 
     export let PopUpObj: PopUp;
     let title = PopUpObj.title;
@@ -40,8 +40,9 @@
     });
 
 
-    function onSubmit(){
-        const answers = [];
+        // @ts-ignore
+    function onSubmit(e){
+        const answers:any[] = [];
         answers.push(true);
         if (inputHints.length != 0) {
             const inputs =
@@ -54,17 +55,18 @@
                 answers.push(input.value);
             }
         }
-
+        
         PopUpObj.isOn = false;
         if (PopUpObj.interval != null) {
             clearInterval(PopUpObj.interval);
             clearInterval(x);
         }
-
-        if (afterDialog) {
+        
+        PopUpObj.clear();
+        if (afterDialog) {  
             afterDialog(answers);
         }
-        PopUpObj.clear();
+        e.preventDefault()
     }
 
     function onCancel(){
@@ -91,7 +93,7 @@
         <div class="popUpContentBox">
             <p>{content}</p>
         </div>
-        <form on:submit={onSubmit}>
+        <form on:submit={onSubmit} >
             {#if inputHints.length != 0}
                 <div class="inputBox">
                     {#each inputHints as inputHint}

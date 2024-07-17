@@ -402,9 +402,9 @@
                                 }px) translateY(${playerpos[0] * width}px)`;
                                 checkResult()
                             } else {
-                                console.log(
-                                    cellData[playerpos[0]][playerpos[1]][0],
-                                );
+                                // console.log(
+                                //     cellData[playerpos[0]][playerpos[1]][0],
+                                // );
                             }
                         }
         }
@@ -419,9 +419,9 @@
                                 }px) translateY(${playerpos[0] * width}px)`;
                                 checkResult()
                             } else {
-                                console.log(
-                                    cellData[playerpos[0]][playerpos[1]][1],
-                                );
+                                // console.log(
+                                //     cellData[playerpos[0]][playerpos[1]][1],
+                                // );
                             }
                         }
             }
@@ -439,9 +439,9 @@
                                 }px) translateY(${playerpos[0] * width}px)`;
                                 checkResult()
                             } else {
-                                console.log(
-                                    cellData[playerpos[0]][playerpos[1]][2],
-                                );
+                                // console.log(
+                                //     cellData[playerpos[0]][playerpos[1]][2],
+                                // );
                             }
                         }
             }
@@ -457,9 +457,9 @@
                                     playerpos[1] * width
                                 }px) translateY(${playerpos[0] * width}px)`;
                             } else {
-                                console.log(
-                                    cellData[playerpos[0]][playerpos[1]][3],
-                                );
+                                // console.log(
+                                //     cellData[playerpos[0]][playerpos[1]][3],
+                                // );
                             }
                         }
             }
@@ -525,7 +525,7 @@
                 if (now <= 10) {
                     color = "red";
                     if(player)
-                    player.style.backgroundImage=`url("/src/assets/fear.jpg")`
+                    player.style.backgroundImage=`url("$lib/assets/fear.jpg")`
                 }
 
                 if (now <= 0) {
@@ -546,7 +546,7 @@
     });
 
 
-</script>-
+</script>
 
 <main>
     <div class="textBox">
@@ -571,7 +571,7 @@
 
             <button class="play" on:click={Game}>{(gameStarted) ? ((paused) ? "PLAY" : "PAUSE") : "PLAY"}</button>
         </div>    
-        <div class="{(screenWidth >900)?"halfwidth":""} playarea" 
+        <div class="{(screenWidth >900)?"":""} playarea" 
             style={(paused) ? "filter: blur(8px);" : ""};    
         >
             <div id="img"></div>
@@ -602,13 +602,16 @@
         height: 100vh;
         padding: 0;
         margin: 0;
-        background-image: url("/src/assets/img2.jpeg");
+        background-image: url("$lib/assets/img2.jpeg");
         background-attachment: fixed;
         background-size: cover;
         color: whitesmoke;
         font-family: "Poppins", times-new-roman, "Lucida Sans",
             "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode",
             Geneva, Verdana, sans-serif;
+    }
+    h1{
+        margin: 0;
     }
     .timerDiv{
         display: flex;
@@ -661,6 +664,11 @@
         color: #fff;
         font-size: 1.5em;
     }
+    .btn{
+        
+        padding: 10px 20px;
+        margin: 4px;
+    }
     .timer div span {
         position: absolute;
         transform: translateX(-22px) translateY(-10px);
@@ -698,14 +706,10 @@
     .play {
         margin: 0 20px;
         margin-top: 20px;
-    }
-    
-    .halfwidth {
-        width: 45%;
+        padding: 5px 10px;
     }
     .playarea {
         display: flex;
-        align-self: center;
         justify-content: center;
         margin-right: 3em;
     }
@@ -731,13 +735,13 @@
         background-size: cover;
         min-width: 17px;
         height: 17px;
-        background-image: url('/src/assets/train.jpg');
+        background-image: url('$lib/assets/train.jpg');
     }
 
     #img{
         left: 44px;
         top: 10px;
-        background-image: url('/src/assets/smile.jpg');
+        background-image: url('$lib/assets/smile.jpg');
         transition: all 0.5s;
         position: relative;
         background-position: center;
@@ -757,6 +761,7 @@
     }
     .Main_Container {
         display: flex;
+        max-width: 100vw;
         justify-content: space-evenly;
     }
     .textBox {
@@ -772,9 +777,8 @@
     .heading {
         font-size: 100px;
         text-align: center;
-        margin-top: 10px;
-        margin-bottom: 30px;
-        top: 0;
+        width: 100%;
+        margin: 20px 0;
         -webkit-text-fill-color: transparent;
         text-shadow:
             8px 8px #fff,
@@ -784,7 +788,9 @@
         main {
             width: 100vw;
             min-width: 0px;
+            height: 100vh;
             display: block;
+            padding-top: 60px;
             overflow-y: hidden;
             background-repeat: repeat-y;
         }
@@ -797,8 +803,9 @@
         .heading {
             font-size: 40px;
             margin: 0;
+            width: 100%;
             display: flex;
-            align-self: center;
+            justify-content: center;
         }
         .textBox {
             max-height: 80px;
@@ -811,9 +818,9 @@
             align-items: center;    
             display: flex;
             justify-content: center;
+            max-width: 100vw;
         }   
         .timerDiv{
-            margin: 20px 0 ;
             width: 100%;
             flex-direction: row;
             display: flex;
@@ -828,7 +835,6 @@
         }
         .play{
             height: 40px;
-            width: 100%;
             margin: 0 30px;
         }
         .arrows{
@@ -836,14 +842,16 @@
             margin: 0;
         }
         .btn{
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             font-size: 10px;
         }
         .playarea{
-            transform: scaleX(0.6) scaleY(0.6) translateY(-15%);
-            margin: 0;
+            scale: 0.6;
+            margin-right: 1em;
             padding: 0;
+            position: relative;
+            top: -70px;
         }
     }
 </style>

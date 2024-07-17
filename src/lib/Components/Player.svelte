@@ -1,13 +1,14 @@
 <script lang="ts">
-    import type { Player } from "../Helpers/room";
-    import del from "../../assets/delete.svg";
+    import type { Player } from "$lib/Helpers/room";
 
     export let player:Player;
     export let color;
     export let you:Boolean;
-    
+
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 <main style="--color_m:{color}">
     <div class="info">
         <div class="name">

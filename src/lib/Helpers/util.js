@@ -13,6 +13,11 @@ export let COLORS = [
 export const DIALOG = 'dialog'
 export const ASK = 'ask'
 export const LOADING = 'loading'
+export const GETPLAYERS = 'players'
+export const SCROLL = 'SCROLL'
+export const SETGAME = 'setGame'
+
+export const MULTITYPES = ["create_board","play","won","draw"]
 
 
 /**

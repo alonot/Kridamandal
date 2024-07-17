@@ -154,10 +154,10 @@ export function updateLevel(level:number){
 }
 
 export function getAIMove(board:Array<string>,ainumber:number){
-    console.log("Next"+solver.maxdepth)
+    // console.log("Next"+solver.maxdepth)
     let startTime = performance.now()
     let max_val  = solver.maxVal(structuredClone(board),1,-999999,99999);
-    console.log("Time taken:" + (performance.now() - startTime) + "ms")
+    // console.log("Time taken:" + (performance.now() - startTime) + "ms")
 
     return max_val[1];
 }

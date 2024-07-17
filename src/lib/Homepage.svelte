@@ -1,22 +1,24 @@
 <script lang="ts">
     import { getContext, onMount } from 'svelte';
-    import GameCard from './Components/GameCard.svelte';
-    import { ASK, DIALOG, GAMEMODE, LOADING } from './Helpers/util';
-    import type { Room } from './Helpers/room';
+    import GameCard from '$lib/Components/GameCard.svelte';
+    import { ASK, DIALOG, GAMEMODE, GETPLAYERS, LOADING, SCROLL, SETGAME } from '$lib/Helpers/util';
+    import type { Room } from '$lib/Helpers/room';
 
     let screenWidth:number
     let sliderBar:HTMLInputElement
-    export let currentGame = 1;
     export let currentMode:number;
     const displayPopUp:Function = getContext(DIALOG);
     const loading:Function = getContext(LOADING);
     const askPopUp:Function = getContext(ASK);
+    const getPlayers:Function = getContext(GETPLAYERS);
+    const handleclick:Function = getContext(SCROLL);
+    const setCurrentGame:Function = getContext(SETGAME);
     export let room:Room;
 
     const Allowed :{[key:string] : Array<number>}= {
-      "Tic Tac Toe": [GAMEMODE.AI,GAMEMODE.OFFLINE],
+      "Tic Tac Toe": [GAMEMODE.AI,GAMEMODE.OFFLINE, GAMEMODE.MULTIPLAYER],
       "Maze": [GAMEMODE.OFFLINE,],
-      "Connect 4":[GAMEMODE.OFFLINE,GAMEMODE.AI],
+      "Connect 4":[GAMEMODE.OFFLINE,GAMEMODE.AI,GAMEMODE.MULTIPLAYER],
       "Chess":[],
     }
 
@@ -24,21 +26,30 @@
       room.show = true;
     }
 
+    function gotPlayers(result:any[]){
+      if(result[0]){
+
+        loading(true,"Waiting for the other player to be ready....")
+        if (!room.startGame(result[1])){
+          displayPopUp(
+            "Error",
+            "Unknown senario encountered. No game was set.",
+            2000
+          )
+          loading(false,"")
+        }
+
+      }else{
+        return
+      }
+    }
+
     async function ensureConnection(str:string){
       if (room.device_player != null && room.websocket && room.websocket.readyState == room.websocket.OPEN){
         if (room.device_player.admin){
-          loading(true,"Waiting for the other player to be ready....")
-          // send request to other player for this particular game
-          // NOTE: only admin can send this message
-          // if request is successfull->
-          // if (str !== "home"){
-            //       setCurrentGame(str)
-            //       handleclick()
-            //   }
-            //   current=str
-            // else ->
-            // displayPopUp()
-            //do nothing
+          room.game = str
+          getPlayers(gotPlayers)
+          
         }else{
           displayPopUp(
             "Alert",
@@ -49,7 +60,7 @@
       }else{
         displayPopUp(
           "Alert",
-          "Please create/join a room first",
+          "Please (re)create/(re)join a room first",
           3000,
           ()=>{showRoom()}
         )
@@ -122,25 +133,7 @@
       }
     // console.log(screenWidth)
     })
-    /**
-     * Sets the current page...
-    */
-    const setCurrentGame = (val:string) => {
-      switch (val) {
-        case "Tic Tac Toe": currentGame = 1;break;
-        case "Maze": currentGame = 2;break;
-        case "Connect 4": currentGame = 3;break;
-        case "Chess": currentGame = 4;break;
-                default: currentGame = 999; // for about page
-          break;
-      }
-    }
-
-    export const focusHome=()=>{
-        document.getElementById('Home')?.focus()
-    }
-
-    $: current = "one"
+    
     /**
      * Updates the inner variable "current" which is used to set the game Screen
      * with appropiate game
@@ -162,7 +155,6 @@
               setCurrentGame(str)
               handleclick()
           }
-          current=str
       }
     }
 
@@ -172,28 +164,6 @@
       }
     }
     
-
-    /**
-     * This scrolls the screen to the next window where game 
-     * is ready to be played
-     * @param event
-     */
-    function handleclick(){
-      const element=document.getElementById("boss_section")
-      const elementGame=document.getElementById("currentGame")
-      // window.scrollTo({
-      //   left:comp?.offsetLeft,
-      //   behavior:'smooth'
-      // })
-      if(element != undefined && elementGame != undefined){
-        
-        elementGame.style.display= "flex";
-        if (screenWidth > 900)
-          element.style.transform = "translateX(-100vw)"
-        else 
-          element.style.transform = "translateY(-100vh)"
-      }
-    }
 
 </script>
 
@@ -263,7 +233,11 @@
         background-attachment: fixed;
         background-repeat: repeat-x;
     }
+    p{
+      margin: 0;
+    }
     .infoDiv{
+      margin: 10px 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -282,7 +256,7 @@
         min-width: 100%;
     }
     .image_holder{
-        background-image: url('/src/assets/Shivji_img.jpg');
+        background-image: url('$lib/assets/Shivji_img.jpg');
         background-size: contain;
         background-repeat: no-repeat;
         flex-direction: column;
@@ -406,6 +380,8 @@
         min-width: 200px; 
         background-position: 30px;
         max-width: 350px;
+        position: relative;
+        top: 10px;
       }
 
       .textBox h1{
@@ -413,6 +389,9 @@
         max-height: 70px;
       }
 
+      .subHeading{
+        font-size: 13px;
+      }
       .heading{
         font-size: smaller;
       }

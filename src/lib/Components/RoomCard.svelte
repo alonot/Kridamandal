@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { Room } from "../Helpers/room";
-    import eyeClose from "../../assets/eye-closed.svg"
-    import eyeOpen from "../../assets/eye-open.svg"
-    import cross from "../../assets/cross.svg"
-    import Player from "./Player.svelte";
-    import { ASK, COLORS, DIALOG, LOADING, shuffle } from "../Helpers/util";
+    import type { Room } from "$lib/Helpers/room";
+    import eyeClose from "$lib/assets/eye-closed.svg"
+    import eyeOpen from "$lib/assets/eye-open.svg"
+    import cross from "$lib/assets/cross.svg"
+    import Player from "$lib/Components/Player.svelte";
+    import { ASK, COLORS, DIALOG, LOADING, shuffle } from "$lib/Helpers/util";
     import { getContext, onMount } from "svelte";
 
     export let prop_room: Room;
@@ -36,7 +36,7 @@
                 loading(true,"joining room")
                 if (!room.join(room_id,result[2],result[3])){
                     loading(false)
-                    console.log("failde")
+                    // console.log("failde")
                     alert("Failed. Please retry")
                     room.connectRooms()
                 }

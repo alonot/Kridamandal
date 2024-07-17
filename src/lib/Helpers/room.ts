@@ -14,10 +14,11 @@ export class Room{
     password!:string;
     show!:boolean;
     websocket!:WebSocket | null;
+    game!:string
     handler:Function
 
     constructor(handler:Function){
-        console.log("Callwd")
+        // console.log("Callwd")
         this.clear()
         this.handler = handler
     }
@@ -26,10 +27,11 @@ export class Room{
         this.players = []
         this.device_player = null
         this.room_id = 0; 
+        this.game = ""
     }
 
     public clear(){
-        console.log("Clearing")
+        // console.log("Clearing")
         this.players = []
         this.device_player = null
         this.room_id = 0;
@@ -50,7 +52,7 @@ export class Room{
      * Establishes a connection online
      */
     public async connectRooms(){
-        this.websocket = new WebSocket('ws://localhost:8001/')
+        this.websocket = new WebSocket('wss://kridamandal-backend.onrender.com')
         
         return new Promise<boolean>((resolve, reject) => {
             if (this.websocket){
@@ -81,7 +83,10 @@ export class Room{
         return true;
     }
 
-    public create(password:string, name: string){
+    public async create(password:string, name: string){
+        if (this.websocket == null || this.websocket.readyState != this.websocket.OPEN){
+            await this.connectRooms();
+        }
         this.password = password
         return this.sendMessage({
             "type":"create",
@@ -91,13 +96,50 @@ export class Room{
         })
     }
 
-    public join(room_id:number, password:string, name: string){
+    public async join(room_id:number, password:string, name: string){
+        if (this.websocket == null || this.websocket.readyState != this.websocket.OPEN){
+            await this.connectRooms();
+        }
         this.password = password
         return this.sendMessage({
             "type":"add_player",
             "room_id":room_id,
             "password":password,
             "name":name
+        })
+    }
+
+    public startGame(players:string[]){
+        if (this.game == "") return false
+        return this.sendMessage({
+            "type":"initialize",
+            "players":players,
+            "gameName": this.game
+        })
+    }
+
+    public sendReadySignal(){
+        return this.sendMessage({
+            "type":'player_ready'
+        })
+    }
+
+    public sendNotReadyResponse(){
+        return this.sendMessage({
+            'type':'cancel'
+        })
+    }
+
+    public sendMove(move:any){
+        return this.sendMessage({
+            'type':'play',
+            'move':move
+        })
+    }
+
+    public cancelGame(){
+        return this.sendMessage({
+            'type':'cancel'
         })
     }
 
