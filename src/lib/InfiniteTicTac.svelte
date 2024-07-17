@@ -29,8 +29,9 @@
                 let currentpos = move_info["move"];
                 if (currentpos[0] != -1 && currentpos[1] != -1){
                     updateBoardValues(currentpos[0],currentpos[1])
+                    currentplayer = (currentplayer + 1) % 2;
+                    handleMultiMove(-1,-1);
                 }
-                handleMultiMove(-1,-1);
 
                 break;
 
@@ -78,6 +79,8 @@
     let gotwinner = false;
     let player2 = 0; // score of player2
     let nextMoveAvailable = false
+    // ==== For multiplayer ===
+    let wrongClick = 3
 
     //  ==============
 
@@ -149,6 +152,7 @@
     function handleMultiMove(posi: number, posj: number) {
         if (room.device_player?.role == `player${currentplayer}`) {
             if (posi == -1 || posj == -1) {
+                nextMoveAvailable = true
                 loading(false, "");
                 return;
             }
@@ -156,8 +160,20 @@
             room.sendMove(currentpos);
         } else if (room.device_player?.role == "watcher") {
             loading(false, "");
+            nextMoveAvailable = false
         } else {
             loading(true, "Waiting for the next Move");
+            // if (wrongClick == 0){
+            //     displayPopUp(
+            //         "alert",
+            //         "This is not your move",
+            //         500,
+            //         ()=>{wrongClick = 3}
+            //     )
+            // }
+            // wrongClick --;
+            // loading(false, "");
+            nextMoveAvailable = false
         }
     }
 
@@ -204,6 +220,7 @@
         boardvalues = ["000", "000", "000"];
         player1pos = []
         player2pos = []
+        wrongClick = 3
         nextMoveAvailable = false
         gotwinner = false;
     };
