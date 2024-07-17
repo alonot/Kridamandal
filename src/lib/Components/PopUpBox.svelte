@@ -9,24 +9,18 @@
     let afterDialog = PopUpObj.afterMessage;
     let cancelOn = PopUpObj.cancelOn;
     let x: number;
+    let width:number;
 
     onMount(() => {
         if (PopUpObj.totalTime != 0) {
+            let initialTime = Date.now() 
             let count = 0;
-            const progressDiv = document.getElementsByClassName(
-                "progressDiv",
-            )[0] as HTMLElement;
-            if (progressDiv != null) {
-                progressDiv.style.width = "0";
-            }
-            let incrementUnit = (PopUpObj.totalTime / 300) | 0;
-            x = setInterval(() => {
-                if (progressDiv != null) {
-                    progressDiv.style.width =
-                        (count / PopUpObj.totalTime) * 100 + "%";
-                }
-                count += incrementUnit;
-                if (count >= PopUpObj.totalTime) {
+            x = setInterval(()=> {
+                width = (count / PopUpObj.totalTime * 100);
+                let newt = Date.now()
+                count += newt - initialTime;
+                initialTime = newt
+                if (count >= PopUpObj.totalTime){
                     clearInterval(x);
                     PopUpObj.isOn = false;
 
@@ -35,7 +29,8 @@
                     }
                     PopUpObj.clear();
                 }
-            }, incrementUnit);
+                
+            },5);
         }
     });
 
@@ -86,7 +81,7 @@
 
 <div class="popUp Box">
     <div class="popUpTitleBox">
-        <div class="progressDiv" />
+        <div class="progressDiv" style="width: {width}%;"/>
         <p>{title}</p>
     </div>
     <div class="restBox">

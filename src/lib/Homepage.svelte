@@ -201,9 +201,9 @@
           </div>
           <div class="small_container">
             <GameCard name={"Tic Tac Toe"} color="#FFD600" onClick={clicked} />
-            <GameCard name={"Maze"} color="#D50000" onClick={clicked}/>
-            <GameCard name={"Connect 4"} color="#303F9F" onClick={clicked}/>
             <GameCard name={"Infinite Tic Tac"} color="#8E24AA" onClick={clicked}/>
+            <GameCard name={"Connect 4"} color="#303F9F" onClick={clicked}/>
+            <GameCard name={"Maze"} color="#D50000" onClick={clicked}/>
             <GameCard name={"More Games Comming Soon"} color="#C51162" onClick={clicked}/>
           </div>
           <div class="fullwidth infoDiv">

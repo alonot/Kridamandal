@@ -30,7 +30,7 @@
         cursor: pointer;
     }
     .name{
-        font-size: 10px;
+        font-size: 11px;
         text-align: center;
         color:black;
     }

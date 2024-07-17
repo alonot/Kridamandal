@@ -52,8 +52,8 @@ export class Room{
      * Establishes a connection online
      */
     public async connectRooms(){
-        // this.websocket = new WebSocket('wss://kridamandal-backend.onrender.com')
-        this.websocket = new WebSocket('ws://localhost:8001')
+        this.websocket = new WebSocket('wss://kridamandal-backend.onrender.com')
+        // this.websocket = new WebSocket('ws://localhost:8001')
         
         return new Promise<boolean>((resolve, reject) => {
             if (this.websocket){

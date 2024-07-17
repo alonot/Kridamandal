@@ -19,6 +19,11 @@
                 resetMultiplayer();
                 currentplayer = data.data.current_player;
                 isplaying = true;
+                if (room.device_player?.role == `player${0}`){
+                    device_player_num = 0
+                }else if (room.device_player?.role == `player${1}`){
+                    device_player_num = 1
+                }
                 handleMultiMove(-1,-1);
                 break;
 
@@ -26,6 +31,7 @@
                 const move_info = data.data;
                 currentplayer = move_info["current_player"];
                 // play the move
+                wrongClick = 3
                 let currentpos = move_info["move"];
                 if (currentpos[0] != -1 && currentpos[1] != -1){
                     updateBoardValues(currentpos[0],currentpos[1])
@@ -81,7 +87,7 @@
     let nextMoveAvailable = false
     // ==== For multiplayer ===
     let wrongClick = 3
-
+    let device_player_num:number = -1
     //  ==============
 
     let screenWidth = 901;
@@ -162,17 +168,19 @@
             loading(false, "");
             nextMoveAvailable = false
         } else {
-            loading(true, "Waiting for the next Move");
-            // if (wrongClick == 0){
-            //     displayPopUp(
-            //         "alert",
-            //         "This is not your move",
-            //         500,
-            //         ()=>{wrongClick = 3}
-            //     )
-            // }
-            // wrongClick --;
-            // loading(false, "");
+            // console.log(wrongClick)
+            // loading(true, "Waiting for the next Move");
+            if (wrongClick == 0){
+                displayPopUp(
+                    "alert",
+                    "This is not your move",
+                    1000,
+                    ()=>{wrongClick = 3}
+                )
+            }else{
+                wrongClick --;
+            }
+            loading(false, "");
             nextMoveAvailable = false
         }
     }
@@ -253,6 +261,9 @@
                 : ''}"
         >
             <p>{player1}</p>
+            {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 0}
+                <p class="multi-u">{"(YOU)"}</p>
+                {/if}
         </div>
     </div>
     {/if}
@@ -291,6 +302,9 @@
                 : ''}"
         >
             <p>{player1}</p>
+            {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 0}
+                <p class="multi-u">{"(YOU)"}</p>
+                {/if}
         </div>
     {/if}
         <div
@@ -300,6 +314,9 @@
                 : ''}"
         >
             <p>{player2}</p>
+            {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 1}
+                <p class="multi-u">{"(YOU)"}</p>
+                {/if}
         </div>
     </div>
 </main>
@@ -328,6 +345,9 @@
         min-width: 190px;
         text-align: center;
         margin: 0;
+    }
+    p{
+        margin:  0;
     }
     h2{
         margin: 10px 0;
@@ -401,11 +421,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
     }
     .scoreCard p {
         color: black;
         font-weight: bold;
         font-size: 40px;
+    }
+    .multi-u{
+        font-size: 13px !important;
     }
     @media (max-width: 900px) {
         main{

@@ -16,6 +16,11 @@
                 resetMultiplayer();
                 currentplayer = data.data.current_player;
                 isplaying = true;
+                if (room.device_player?.role == `player${0}`){
+                    device_player_num = 0
+                }else if (room.device_player?.role == `player${1}`){
+                    device_player_num = 1
+                }
                 handleMultiMove(-1);
                 break;
 
@@ -35,6 +40,7 @@
                 filled_blocks++;
                 //////
                 currentplayer = (currentplayer + 1) % 2;
+                
                 handleMultiMove(-1);
 
                 break;
@@ -82,9 +88,21 @@
     $: player2 = 0; // score of player2
     $: div = ["", "", "", "", "", "", "", "", ""]; // the array which is shown on the user screen
     $: filled_blocks = 0; // counts the nuber of filled blocks
+    let nextMoveAvailable = false
+    // === Multiplayer ===
+    let wrongClick = 3;
+    let device_player_num = -1
+
     //  ==============
 
     onMount(() => {
+        if (gameMode == GAMEMODE.MULTIPLAYER){
+            if (room.device_player?.role == `player${0}`){
+                    device_player_num = 0
+                }else if (room.device_player?.role == `player${1}`){
+                    device_player_num = 1
+                }
+        }
         boardvalues = ["000", "000", "000"];
         // Setting the rotation of board on mousemove
         document.onmousemove = (e) => {
@@ -175,9 +193,11 @@
     function handleMultiMove(index: number) {
         // console.log(index + " " + currentplayer)
         // console.log(room.device_player?.role)
+        nextMoveAvailable = false
         if (room.device_player?.role == `player${currentplayer}`) {
             if (index == -1) {
                 loading(false, "");
+                nextMoveAvailable = true
                 return;
             }
             let currentpos = [(index / 3) | 0, index % 3];
@@ -185,7 +205,18 @@
         } else if (room.device_player?.role == "watcher") {
             loading(false, "");
         } else {
-            loading(true, "Waiting for the next Move");
+            if (wrongClick == 0){
+                displayPopUp(
+                    "alert",
+                    "This is not your move",
+                    1000,
+                    ()=>{wrongClick = 3}
+                )
+            }else{
+                wrongClick --;
+            }
+            loading(false, "");
+            nextMoveAvailable = false
         }
     }
 
@@ -193,14 +224,17 @@
         if (gameMode == GAMEMODE.AI) {
             // AI
             if (currentplayer == 1) {
+                nextMoveAvailable = false
                 moveAi();
             }
+            nextMoveAvailable = true
         } else if (gameMode == GAMEMODE.MULTIPLAYER) {
             // const nextMOVE = GETNEXTMOVE(thisplayermove = index)
             handleMultiMove(index);
             // displayMove()
         } else if (gameMode == GAMEMODE.OFFLINE) {
             // Eat a 5-star, Do nothing.
+            nextMoveAvailable = true
         }
     }
 
@@ -236,6 +270,7 @@
         board.style.pointerEvents = "auto";
         boardvalues = ["000", "000", "000"];
         filled_blocks = 0;
+        wrongClick = 3
         gotwinner = false;
         board.style.filter = "blur(0px)";
     };
@@ -414,6 +449,9 @@
                     disabled
                     on:click={play}
                     >X
+                    {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 0}
+                <p class="multi-u">{"(YOU)"}</p>
+                {/if}
                 </button>
                 <button
                     class="displaybtn"
@@ -421,6 +459,9 @@
                     disabled
                     on:click={play}
                     >O
+                    {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 1}
+                <p class="multi-u">{"(YOU)"}</p>
+                {/if}
                 </button>
             </div>
         </center>
@@ -661,6 +702,9 @@
         text-align: center;
         margin: 0;
     }
+    p{
+        margin: 0;
+    }
     .Main_Container {
         display: flex;
         flex-direction: column;
@@ -674,6 +718,7 @@
     .scorecardholder {
         position: relative;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         width: 25%;

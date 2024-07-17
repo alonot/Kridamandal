@@ -21,6 +21,11 @@
             case "create_board":
                 nextGame();
                 currentPlayer = data.data.current_player;
+                if (room.device_player?.role == `player${0}`){
+                    device_player_num = 0
+                }else if (room.device_player?.role == `player${1}`){
+                    device_player_num = 1
+                }
                 isplaying = true;
                 dropRow = -1;
                 handleMultiMove();
@@ -42,6 +47,7 @@
                     nextMoveAvailable = false;
                 }
                 dropRow = -1;
+                wrongClick = 3
                 handleMultiMove();
 
                 break;
@@ -76,6 +82,7 @@
 
     const displayPopUp: Function = getContext(DIALOG);
 
+    // ===== Game variables ========
     $: player1Score = 0;
     $: player2Score = 0;
     $: currentPlayer = 0;
@@ -86,6 +93,10 @@
     let nextMoveAvailable: boolean = true;
     let circleDiv: HTMLCollectionOf<HTMLElement>;
     let isplaying = true;
+    // ====== Multiplayer variables ====
+    let wrongClick = 3;
+    let device_player_num = -1;
+    // =======
 
     let dropRow: number = -1;
     nextGame();
@@ -109,8 +120,20 @@
             room.sendMove(dropRow);
         } else if (device_player?.role == "watcher") {
             loading(false, "");
+            nextMoveAvailable = false
         } else {
-            loading(true, "Waiting for the next Move");
+            if (wrongClick == 0){
+                displayPopUp(
+                    "alert",
+                    "This is not your move",
+                    1000,
+                    ()=>{wrongClick = 3}
+                )
+            }else{
+                wrongClick --;
+            }
+            loading(false, "");
+            nextMoveAvailable = false
         }
     }
 
@@ -254,6 +277,7 @@
     };
 
     function nextGame() {
+        wrongClick = 3;
         board = [];
         for (let i = 0; i < 6; i++) {
             let newArr = "0".repeat(7);
@@ -285,6 +309,9 @@
                     : ''}"
             >
                 <p>{player1Score}</p>
+                {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 0}
+                <p class="multi-u">{"(YOU)"}</p>
+                {/if}
             </div>
             <div
                 class="scoreCard"
@@ -292,7 +319,10 @@
                     ? 'box-shadow: 0 0 100px yellow;border:5px solid yellow'
                     : ''}"
             >
-                <p>{player2Score}</p>
+            <p>{player2Score}</p>
+            {#if gameMode == GAMEMODE.MULTIPLAYER && device_player_num == 1}
+            <p class="multi-u">{"(YOU)"}</p>
+            {/if}
             </div>
         </div>
         <div class="fullwidth flex center">
@@ -396,6 +426,9 @@
         font-weight: bold;
         border: none;
     }
+    .multi-u{
+        font-size: 13px !important;
+    }
     main {
         --neon-effect: 0 0 0 transparent, 0 0 20px rgb(255, 0, 0),
             0 0 50px rgba(255, 0, 0, 0.5), 0 0 200px rgba(255, 0, 0, 0.5),
@@ -414,7 +447,7 @@
     }
 
     h1,
-    h2 {
+    h2 ,p{
         margin: 0;
     }
     svg {
@@ -465,6 +498,7 @@
         border-radius: 5px;
         display: flex;
         align-items: center;
+        flex-direction: column;
         justify-content: center;
     }
     .scoreCard p {
