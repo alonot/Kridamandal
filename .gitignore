@@ -12,6 +12,7 @@ dist-ssr
 *.local
 *.svelte-kit
 *build
+*package-lock.json
 
 # Editor directories and files
 *.vscode/*
