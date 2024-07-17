@@ -16,15 +16,15 @@
                 resetMultiplayer();
                 currentplayer = data.data.current_player;
                 isplaying = true;
-                handleMultiMove(-1)
+                handleMultiMove(-1);
                 break;
 
             case "play":
                 const move_info = data.data;
                 currentplayer = move_info["current_player"];
                 // play the move
-                let currentpos = move_info['move']
-                let index = currentpos[0] * 3 + currentpos[1]
+                let currentpos = move_info["move"];
+                let index = currentpos[0] * 3 + currentpos[1];
                 div[index] = currentplayer == 0 ? "X" : "O";
 
                 boardvalues[currentpos[0]] =
@@ -35,7 +35,7 @@
                 filled_blocks++;
                 //////
                 currentplayer = (currentplayer + 1) % 2;
-                handleMultiMove(-1)
+                handleMultiMove(-1);
 
                 break;
 
@@ -55,14 +55,16 @@
                     "message",
                     "Winner is : " + won_info["won"],
                     3000,
-                    ()=>resetMultiplayer(),
+                    () => resetMultiplayer(),
                 );
                 break;
 
             case "draw":
                 isplaying = false;
                 loading(false, "R");
-                displayPopUp("message", "Game Over", 3000, ()=>{resetMultiplayer()});
+                displayPopUp("message", "Game Over", 3000, () => {
+                    resetMultiplayer();
+                });
                 break;
         }
     };
@@ -116,9 +118,9 @@
      * @param index
      */
     function handleclick(index: number) {
-        if (gameMode == GAMEMODE.MULTIPLAYER){
+        if (gameMode == GAMEMODE.MULTIPLAYER) {
             handleMultiMove(index);
-        }else if (div[index] == "") {
+        } else if (div[index] == "") {
             if (updateBoard(index)) {
                 return;
             }
@@ -170,8 +172,8 @@
         return false;
     }
 
-    function handleMultiMove(index:number){
-        // console.log(index + " " + currentplayer)  
+    function handleMultiMove(index: number) {
+        // console.log(index + " " + currentplayer)
         // console.log(room.device_player?.role)
         if (room.device_player?.role == `player${currentplayer}`) {
             if (index == -1) {
@@ -187,7 +189,7 @@
         }
     }
 
-    function nextTurn(index:number) {
+    function nextTurn(index: number) {
         if (gameMode == GAMEMODE.AI) {
             // AI
             if (currentplayer == 1) {
@@ -195,7 +197,7 @@
             }
         } else if (gameMode == GAMEMODE.MULTIPLAYER) {
             // const nextMOVE = GETNEXTMOVE(thisplayermove = index)
-            handleMultiMove(index)
+            handleMultiMove(index);
             // displayMove()
         } else if (gameMode == GAMEMODE.OFFLINE) {
             // Eat a 5-star, Do nothing.
@@ -236,7 +238,7 @@
         filled_blocks = 0;
         gotwinner = false;
         board.style.filter = "blur(0px)";
-    }
+    };
 
     /**
      * Resets the game with a parameter(willplay) that if players are going to continue the game or not .
@@ -244,12 +246,16 @@
      */
     const reset = (willplay: boolean) => {
         isplaying = willplay;
+        if (isplaying){
+            board.style.filter = "blur(0px)";
+        }else{
+            board.style.removeProperty('filter')
+        }
         div = ["", "", "", "", "", "", "", "", ""];
         board.style.pointerEvents = "auto";
         boardvalues = ["000", "000", "000"];
         filled_blocks = 0;
         gotwinner = false;
-        board.style.filter = "blur(0px)";
         currentplayer = (currentplayer + 1) % 2;
         // console.log("resetting" + currentplayer)
     };
@@ -396,7 +402,9 @@
             <h1 class="heading fonter">Tic Tac Toe</h1>
         </div>
         {#if gameMode != GAMEMODE.MULTIPLAYER}
-        <center> <button class="playbtn" on:click={play}>PLAY </button></center>
+            <center>
+                <button class="playbtn" on:click={play}>PLAY </button></center
+            >
         {/if}
         <center>
             <div class="chanceholder">
@@ -420,15 +428,15 @@
         <div class="boarddiv">
             <center>
                 <div
-                    class="board"
+                    class="board  {isplaying
+                        ? "rotationCss"
+                        : ""}"
                     bind:this={board}
-                    style={isplaying
-                        ? "transform:  rotateX(0deg) rotateY(360deg); box-shadow:0 0 120px #907603;0 0 120px #907603;0 0 120px #907603;0 0 120px #907603;"
-                        : ""}
                 >
                     <div class="top covers"></div>
                     <div class="cube">
-                        <span
+                        <!-- Front side -->
+                        <span  
                             style="--i:0; {isplaying
                                 ? 'background: #f1d039; border:5px black solid; box-shadow:0 0 50px black;'
                                 : ''} "
@@ -443,60 +451,14 @@
                                 >
                                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                                     <!-- svelte-ignore a11y-no-static-element-interactions -->
-                                    <div
-                                        class="item {div[0]}"
-                                        on:click={() => {
-                                            handleclick(0);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[1]}"
-                                        on:click={() => {
-                                            handleclick(1);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[2]}"
-                                        on:click={() => {
-                                            handleclick(2);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[3]}"
-                                        on:click={() => {
-                                            handleclick(3);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[4]}"
-                                        on:click={() => {
-                                            handleclick(4);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[5]}"
-                                        on:click={() => {
-                                            handleclick(5);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[6]}"
-                                        on:click={() => {
-                                            handleclick(6);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[7]}"
-                                        on:click={() => {
-                                            handleclick(7);
-                                        }}
-                                    ></div>
-                                    <div
-                                        class="item {div[8]}"
-                                        on:click={() => {
-                                            handleclick(8);
-                                        }}
-                                    ></div>
+                                    {#each div as cell, ind}
+                                        <div
+                                            class="item {div[ind]}"
+                                            on:click={() => {
+                                                handleclick(ind);
+                                            }}
+                                        ></div>
+                                    {/each}
                                 </div>
                             {:else}
                                 <center
@@ -506,14 +468,17 @@
                                 >
                             {/if}
                         </span>
+                        <!-- Right wall -->
                         <span
                             class="side right"
                             style="--i:1; width:100px; transform:translateX(250px) rotateY(90deg)"
                             ><center>Tic Tac Toe</center></span
                         >
+                        <!-- Back wall. This is in the front when not playing the game -->
                         <span class="side" style="--i:2; color:#f2c969;"
                             ><center>Tic Tac Toe</center></span
                         >
+                        <!-- Left wall -->
                         <span
                             class="side"
                             style="--i:3; width:100px; color:#f2c969"
@@ -525,14 +490,14 @@
             >
             <!-- svelte-ignore a11y-no-static-element-interactions -->
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-             {#if gameMode != GAMEMODE.MULTIPLAYER}
-            <div
-                class="reset"
-                on:click={() => reset(false)}
-                style="background-color: green; transform: rotateY({isplaying
-                    ? '0deg'
-                    : '90deg'}); {gotwinner ? 'pointer-events:none' : ''}"
-            ></div>
+            {#if gameMode != GAMEMODE.MULTIPLAYER}
+                <div
+                    class="reset"
+                    on:click={() => reset(false)}
+                    style="background-color: green; transform: rotateY({isplaying
+                        ? '0deg'
+                        : '90deg'}); {gotwinner ? 'pointer-events:none' : ''}"
+                ></div>
             {/if}
         </div>
     </div>
@@ -727,6 +692,11 @@
     .scorerHolder:hover {
         transform: rotateY(20deg) rotateX(-5deg) rotateZ(2deg);
     }
+    .rotationCss{
+        transform:  rotateX(0deg) rotateY(360deg) !important; 
+        box-shadow:0 0 120px #907603, 0 0 120px #907603, 0 0 120px #907603, 0 0 120px #907603;
+    }
+
     .chanceholder {
         display: grid;
         grid-template-columns: auto auto;

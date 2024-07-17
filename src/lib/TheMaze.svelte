@@ -41,8 +41,11 @@
     let cellDatalines: Array<Array<number>> = new Array(TotalCells);
     let width = 500 / 25;
     let playerpos = [0, 0];
-    let destination:Array<number>=[]
-    let moveUp:Function,moveDown:Function,moveLeft:Function,moveRight:Function
+    let destination: Array<number> = [];
+    let moveUp: Function,
+        moveDown: Function,
+        moveLeft: Function,
+        moveRight: Function;
     let clearX: Function;
     let resetPlayerOnScreen: Function;
     // initialization
@@ -55,9 +58,10 @@
      *  Handles the running of the game
      */
     const Game = () => {
-        if (gameStarted){ // play pause the game
-            pauseGame()
-        }else{
+        if (gameStarted) {
+            // play pause the game
+            pauseGame();
+        } else {
             gameStarted = true;
             showLoading();
             resetVariables();
@@ -69,19 +73,20 @@
                 paused = false;
                 startTimer(); // This function calls the checkresult function  which calls showresult.
             }, 7);
-        }7  };
-
+        }
+        7;
+    };
 
     const pauseGame = () => {
-        paused = !paused
-        totalTime = now + 1
-        if (paused){
-            clearX()
-            msg = "THE MAZE"
-        }else{
-            startTimer()
+        paused = !paused;
+        totalTime = now + 1;
+        if (paused) {
+            clearX();
+            msg = "THE MAZE";
+        } else {
+            startTimer();
         }
-    }
+    };
 
     pathfinder = () => {
         var c = Board.getContext("2d");
@@ -175,7 +180,7 @@
                 c.stroke();
                 pather = [row, column];
             }
-            destination=pather
+            destination = pather;
         }
     };
 
@@ -335,11 +340,11 @@
         sec = "45";
         color = "#04fc43";
         playerpos = [0, 0];
-        resetPlayerOnScreen()
-        clearX()
-        totalTime = 45
+        resetPlayerOnScreen();
+        clearX();
+        totalTime = 45;
         gameStarted = false;
-        paused = false
+        paused = false;
         TotalCells = 25;
         cellData = new Array(TotalCells);
         cellDatalines = new Array(TotalCells);
@@ -370,15 +375,14 @@
     };
 
     checkResult = () => {
-        if(playerpos[1]==destination[1] && playerpos[0] == destination[0])
-        return true
-        else
-        return false
-    }
+        if (playerpos[1] == destination[1] && playerpos[0] == destination[0])
+            return true;
+        else return false;
+    };
 
-    showResult = (msg:string) => {
-        alert(`You ${msg}`)
-    }
+    showResult = (msg: string) => {
+        alert(`You ${msg}`);
+    };
 
     onMount(() => {
         screenWidth = document.documentElement.clientWidth;
@@ -391,161 +395,184 @@
         let player = document.getElementById("img");
         let train = document.getElementById("imgDest");
         let x: number;
-        moveUp=()=>{
+        moveUp = () => {
             if (player)
-            if (playerpos[0] > 0) {
-                            if (cellData[playerpos[0]][playerpos[1]][0] != 0) {
-                                // console.log("HH");
-                                playerpos[0]--;
-                                player.style.transform = `translateX(${
-                                    playerpos[1] * width
-                                }px) translateY(${playerpos[0] * width}px)`;
-                                checkResult()
-                            } else {
-                                // console.log(
-                                //     cellData[playerpos[0]][playerpos[1]][0],
-                                // );
-                            }
+                if (playerpos[0] > 0) {
+                    if (cellData[playerpos[0]][playerpos[1]][0] != 0) {
+                        // console.log("HH");
+                        playerpos[0]--;
+                        player.style.transform = `translateX(${
+                            playerpos[1] * width
+                        }px) translateY(${playerpos[0] * width}px)`;
+                        if (checkResult()) {
+                            showResult("WON");
+                            gameStarted = false;
+                            paused = false;
+                            resetVariables();
                         }
-        }
-        moveDown=()=>{
-            if(player){
+                    } else {
+                        // console.log(
+                        //     cellData[playerpos[0]][playerpos[1]][0],
+                        // );
+                    }
+                }
+        };
+        moveDown = () => {
+            if (player) {
                 if (playerpos[0] + 1 < TotalCells) {
-                            if (cellData[playerpos[0]][playerpos[1]][1] != 0) {
-                                // console.log("pp");
-                                playerpos[0]++;
-                                player.style.transform = `translateX(${
-                                    playerpos[1] * width
-                                }px) translateY(${playerpos[0] * width}px)`;
-                                checkResult()
-                            } else {
-                                // console.log(
-                                //     cellData[playerpos[0]][playerpos[1]][1],
-                                // );
-                            }
+                    if (cellData[playerpos[0]][playerpos[1]][1] != 0) {
+                        // console.log("pp");
+                        playerpos[0]++;
+                        player.style.transform = `translateX(${
+                            playerpos[1] * width
+                        }px) translateY(${playerpos[0] * width}px)`;
+                        if (checkResult()) {
+                            showResult("WON");
+                            gameStarted = false;
+                            paused = false;
+                            resetVariables();
                         }
+                    } else {
+                        // console.log(
+                        //     cellData[playerpos[0]][playerpos[1]][1],
+                        // );
+                    }
+                }
             }
-        }
+        };
 
-        moveLeft=()=>{
-            if(player){
+        moveLeft = () => {
+            if (player) {
                 if (playerpos[1] > 0) {
-                            // console.log("left");
-                            if (cellData[playerpos[0]][playerpos[1]][2] != 0) {
-                                // console.log("HH1");
-                                playerpos[1]--;
-                                player.style.transform = `translateX(${
-                                    playerpos[1] * width
-                                }px) translateY(${playerpos[0] * width}px)`;
-                                checkResult()
-                            } else {
-                                // console.log(
-                                //     cellData[playerpos[0]][playerpos[1]][2],
-                                // );
-                            }
+                    // console.log("left");
+                    if (cellData[playerpos[0]][playerpos[1]][2] != 0) {
+                        // console.log("HH1");
+                        playerpos[1]--;
+                        player.style.transform = `translateX(${
+                            playerpos[1] * width
+                        }px) translateY(${playerpos[0] * width}px)`;
+                        if (checkResult()) {
+                            showResult("WON");
+                            gameStarted = false;
+                            paused = false;
+                            resetVariables();
                         }
+                    } else {
+                        // console.log(
+                        //     cellData[playerpos[0]][playerpos[1]][2],
+                        // );
+                    }
+                }
             }
-        }
-        moveRight=()=>{
-            if(player){
+        };
+        moveRight = () => {
+            if (player) {
                 if (playerpos[1] + 1 < TotalCells) {
-                            // console.log("left");
-                            if (cellData[playerpos[0]][playerpos[1]][3] != 0) {
-                                // console.log("pp1");
-                                playerpos[1]++;
-                                player.style.transform = `translateX(${
-                                    playerpos[1] * width
-                                }px) translateY(${playerpos[0] * width}px)`;
-                            } else {
-                                // console.log(
-                                //     cellData[playerpos[0]][playerpos[1]][3],
-                                // );
-                            }
+                    // console.log("left");
+                    if (cellData[playerpos[0]][playerpos[1]][3] != 0) {
+                        // console.log("pp1");
+                        playerpos[1]++;
+                        player.style.transform = `translateX(${
+                            playerpos[1] * width
+                        }px) translateY(${playerpos[0] * width}px)`;
+                        if (checkResult()) {
+                            showResult("WON");
+                            gameStarted = false;
+                            paused = false;
+                            resetVariables();
                         }
+                    } else {
+                        // console.log(
+                        //     cellData[playerpos[0]][playerpos[1]][3],
+                        // );
+                    }
+                }
             }
-        }
+        };
 
         document.onkeydown = function (e) {
             // console.log(
             //     cellData[playerpos[0]][playerpos[1]] + "::" + playerpos,
             // );
-            if (player && gameStarted &&  !paused) {
+            if (player && gameStarted && !paused) {
                 switch (e.key) {
                     case "ArrowUp":
-                        moveUp()
+                        moveUp();
                         break;
                     case "ArrowDown":
-                        moveDown()
+                        moveDown();
                         break;
                     case "ArrowLeft":
-                        moveLeft()
+                        moveLeft();
                         break;
                     case "ArrowRight":
-                        moveRight()
+                        moveRight();
                         break;
                 }
             }
-            if(checkResult()){
-                showResult("WON")
-                gameStarted = false
-                paused = false
+            if (checkResult()) {
+                showResult("WON");
+                gameStarted = false;
+                paused = false;
+                resetVariables();
             }
         };
         clearX = () => {
             if (x) {
-                clearInterval(x)
+                clearInterval(x);
             }
-        }
+        };
 
         resetPlayerOnScreen = () => {
-            if (player) player.style.transform = 'none';
-        }
-
+            if (player) player.style.transform = "none";
+        };
 
         startTimer = () => {
-            if(train)
-            train.style.transform = `translateX(${
-                                    destination[1] * width
-                                }px) translateY(${destination[0] * width}px)`;
-            clearX()
-            let starting :Date = new Date()
+            if (train)
+                train.style.transform = `translateX(${
+                    destination[1] * width
+                }px) translateY(${destination[0] * width}px)`;
+            clearX();
+            let starting: Date = new Date();
 
             x = setInterval(() => {
-                now =totalTime - ((Math.abs((new Date()).valueOf() - starting.valueOf())) / 1000) | 0
+                now =
+                    (totalTime -
+                        Math.abs(new Date().valueOf() - starting.valueOf()) /
+                            1000) |
+                    0;
                 // console.log(now)
 
                 if (sec_dot)
-                    sec_dot.style.transform = `rotateZ(${(now - 1) * 6}deg)`;
+                    sec_dot.style.transform = `rotateZ(${(now - 1) * 8}deg)`; // 360deg / 45 
                 if (ss)
                     ss.style.strokeDashoffset =
-                        440 - (440 * (now - 1)) / 60 + "";
+                        440 - (440 * (now - 1)) /45 + "";
 
                 // now -= 1;
                 sec = now + "";
                 if (now <= 10) {
                     color = "red";
-                    if(player)
-                    player.style.backgroundImage=`url("$lib/assets/fear.jpg")`
+                    if (player)
+                        player.style.backgroundImage = `url("$lib/assets/fear.jpg")`;
                 }
 
                 if (now <= 0) {
-                    clearX()
+                    clearX();
                     // console.log(destination+"<<>>"+playerpos)
-                    let result = checkResult()
-                    if (result == true){
-                        showResult("WON")
-                        resetVariables()
-                    }else{
-                        showResult("LOST")
-                        resetVariables()
+                    let result = checkResult();
+                    if (result == true) {
+                        showResult("WON");
+                        resetVariables();
+                    } else {
+                        showResult("LOST");
+                        resetVariables();
                     }
-                    gameStarted = false
+                    gameStarted = false;
                 }
             }, 1000);
         };
     });
-
-
 </script>
 
 <main>
@@ -563,29 +590,56 @@
                 <div id="seconds">{sec}<br /><span>seconds</span></div>
             </div>
             <div class="arrows">
-                <button class="btn" style="grid-row: 1;grid-column:2;" on:click={()=>{moveUp()}}>W</button>
-                <button class="btn" style="grid-row: 2;" on:click={()=>{moveLeft()}}>A</button>
-                <button class="btn" style="grid-row: 2;" on:click={()=>{moveDown()}}>S</button>
-                <button class="btn" style="grid-row: 2;" on:click={()=>{moveRight()}}>D</button>
+                <button
+                    class="btn"
+                    style="grid-row: 1;grid-column:2;"
+                    on:click={() => {
+                        moveUp();
+                    }}>W</button
+                >
+                <button
+                    class="btn"
+                    style="grid-row: 2;"
+                    on:click={() => {
+                        moveLeft();
+                    }}>A</button
+                >
+                <button
+                    class="btn"
+                    style="grid-row: 2;"
+                    on:click={() => {
+                        moveDown();
+                    }}>S</button
+                >
+                <button
+                    class="btn"
+                    style="grid-row: 2;"
+                    on:click={() => {
+                        moveRight();
+                    }}>D</button
+                >
             </div>
 
-            <button class="play" on:click={Game}>{(gameStarted) ? ((paused) ? "PLAY" : "PAUSE") : "PLAY"}</button>
-        </div>    
-        <div class="{(screenWidth >900)?"":""} playarea" 
-            style={(paused) ? "filter: blur(8px);" : ""};    
+            <button class="play" on:click={Game}
+                >{gameStarted ? (paused ? "PLAY" : "PAUSE") : "PLAY"}</button
+            >
+        </div>
+        <div
+            class="{screenWidth > 900 ? '' : ''} playarea"
+            style="{paused ? 'filter: blur(8px);' : ''};"
         >
             <div id="img"></div>
-            <div id="imgDest" ></div>
+            <div id="imgDest"></div>
             <canvas
                 class="boardcanvas playareacontnt"
                 style={!gameStarted ? "display: none;" : ""}
-                id="board" 
+                id="board"
             >
             </canvas>
             <div
                 class="playareacontnt"
                 id="messageBox"
-                style={gameStarted? "display: none;" : ""}
+                style={gameStarted ? "display: none;" : ""}
             >
                 {msg}
             </div>
@@ -610,10 +664,10 @@
             "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode",
             Geneva, Verdana, sans-serif;
     }
-    h1{
+    h1 {
         margin: 0;
     }
-    .timerDiv{
+    .timerDiv {
         display: flex;
         flex-direction: column;
         margin-top: auto;
@@ -623,11 +677,11 @@
         justify-content: space-between;
         margin-bottom: auto;
     }
-    .arrows{
+    .arrows {
         display: grid;
         grid-template-columns: auto auto auto;
         align-items: center;
-        justify-content: center ;
+        justify-content: center;
         margin-top: 10px;
     }
     .timer {
@@ -664,8 +718,7 @@
         color: #fff;
         font-size: 1.5em;
     }
-    .btn{
-        
+    .btn {
         padding: 10px 20px;
         margin: 4px;
     }
@@ -687,6 +740,7 @@
         height: 100%;
         border-radius: 50%;
         display: flex;
+        transform: rotateZ(360deg);
         justify-content: center;
         align-items: flex-start;
         z-index: 1000;
@@ -726,7 +780,7 @@
         align-items: center;
         justify-content: center;
     }
-    #imgDest{
+    #imgDest {
         position: relative;
         z-index: 6;
         left: 28px;
@@ -735,13 +789,13 @@
         background-size: cover;
         min-width: 17px;
         height: 17px;
-        background-image: url('$lib/assets/train.jpg');
+        background-image: url("$lib/assets/train.jpg");
     }
 
-    #img{
+    #img {
         left: 44px;
         top: 10px;
-        background-image: url('$lib/assets/smile.jpg');
+        background-image: url("$lib/assets/smile.jpg");
         transition: all 0.5s;
         position: relative;
         background-position: center;
@@ -813,40 +867,40 @@
             display: flex;
             justify-content: center;
         }
-        .Main_Container{
+        .Main_Container {
             flex-direction: column;
-            align-items: center;    
+            align-items: center;
             display: flex;
             justify-content: center;
             max-width: 100vw;
-        }   
-        .timerDiv{
+        }
+        .timerDiv {
             width: 100%;
             flex-direction: row;
             display: flex;
             align-items: center;
         }
-        .timer{
+        .timer {
             scale: 0.5;
         }
-        #seconds span{
+        #seconds span {
             margin: 10px 5px;
             font-size: 7px;
         }
-        .play{
+        .play {
             height: 40px;
             margin: 0 30px;
         }
-        .arrows{
+        .arrows {
             height: 70px;
             margin: 0;
         }
-        .btn{
+        .btn {
             width: 40px;
             height: 40px;
             font-size: 10px;
         }
-        .playarea{
+        .playarea {
             scale: 0.6;
             margin-right: 1em;
             padding: 0;

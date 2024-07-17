@@ -19,7 +19,7 @@
       "Tic Tac Toe": [GAMEMODE.AI,GAMEMODE.OFFLINE, GAMEMODE.MULTIPLAYER],
       "Maze": [GAMEMODE.OFFLINE,],
       "Connect 4":[GAMEMODE.OFFLINE,GAMEMODE.AI,GAMEMODE.MULTIPLAYER],
-      "Chess":[],
+      "Infinite Tic Tac":[GAMEMODE.OFFLINE,GAMEMODE.AI],
     }
 
     function showRoom(){
@@ -203,7 +203,7 @@
             <GameCard name={"Tic Tac Toe"} color="#FFD600" onClick={clicked} />
             <GameCard name={"Maze"} color="#D50000" onClick={clicked}/>
             <GameCard name={"Connect 4"} color="#303F9F" onClick={clicked}/>
-            <!-- <GameCard name={"Chess"} color="#8E24AA" onClick={clicked}/> -->
+            <GameCard name={"Infinite Tic Tac"} color="#8E24AA" onClick={clicked}/>
             <GameCard name={"More Games Comming Soon"} color="#C51162" onClick={clicked}/>
           </div>
           <div class="fullwidth infoDiv">

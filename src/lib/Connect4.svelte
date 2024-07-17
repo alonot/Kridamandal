@@ -357,8 +357,7 @@
                                     class={dropRow == ind ? "light" : ""}
                                     height="55"
                                     width="55"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
+                                    xmlns="http://www.w3.org/2000/svg">
                                     <circle
                                         r="24"
                                         cx="27.5"

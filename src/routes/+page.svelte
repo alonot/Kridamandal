@@ -22,6 +22,7 @@
     import RoomCard from "$lib/Components/RoomCard.svelte";
     import Loading from "$lib/Components/Loading.svelte";
     import AskPlayer from "$lib/Components/AskPlayer.svelte";
+    import InfiniteTicTac from "$lib/InfiniteTicTac.svelte";
   
     //// States for this app //////////
     let currentGame = 1;
@@ -77,7 +78,7 @@
         case "Connect 4":
           currentGame = 3;
           break;
-        case "Chess":
+        case "Infinite Tic Tac":
           currentGame = 4;
           break;
         default:
@@ -422,6 +423,8 @@
           <TheMaze />
         {:else if currentGame == 3}
           <Connect4 bind:handleMultiplayer={handleMulti} bind:device_player={room.device_player} room={room} bind:gameMode />
+        {:else if currentGame == 4}
+          <InfiniteTicTac bind:handleMultiplayer={handleMulti} bind:gameMode room={room} />
         {:else}
           <About></About>
         {/if}
