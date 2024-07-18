@@ -468,6 +468,7 @@
         .Main_Container {
             margin: 20px auto;
             width: 100vw;
+            height: auto;
         }
     }
 </style>
